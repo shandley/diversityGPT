@@ -1,0 +1,36 @@
+Package: diversityGPT
+Title: AI-Powered Microbiome Diversity Analysis with Intelligent Synthesis
+Version: 0.0.0.9000
+Authors@R: 
+    person("Scott", "Handley", , "your.email@example.com", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: Solves the critical decision confusion problem in microbiome diversity 
+    analysis by providing intelligent synthesis of multiple diversity metrics. When 
+    different metrics give conflicting results, diversityGPT uses consensus algorithms 
+    and AI-powered interpretation to provide clear, actionable insights.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports: 
+    phyloseq,
+    vegan,
+    stats,
+    httr2,
+    jsonlite,
+    cli,
+    rlang
+Suggests: 
+    ggplot2,
+    plotly,
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    mockery,
+    withr
+Config/testthat/edition: 3
+Depends: 
+    R (>= 4.0)
+LazyData: true
+URL: https://github.com/shandley/diversityGPT
+BugReports: https://github.com/shandley/diversityGPT/issues

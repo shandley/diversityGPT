@@ -1,0 +1,35 @@
+# R and RStudio files
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# Package build files
+/*.tar.gz
+/*.Rcheck/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.Renviron
+.env
+
+# Temporary files
+*~
+*.swp
+*.swo
+
+# Documentation
+/Meta/
+/doc/
+inst/doc
+
+# Development files
+/dev/tmp/
+
+# API keys and secrets
+*.key
+*.pem

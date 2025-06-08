@@ -1,0 +1,17 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^data-raw$
+^dev$
+^\.github$
+^README\.Rmd$
+^LICENSE\.md$
+^DEVELOPMENT\.md$
+^\.Renviron$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.DS_Store$
+^diversity_information_theory_framework\.md$
+^llm_ecological_interpretation_framework\.md$
+^diversitygpt_package_design\.md$
+^CLAUDE\.md$
