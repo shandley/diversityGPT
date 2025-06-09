@@ -1,0 +1,8 @@
+# Copy this file to .Renviron and add your actual API keys
+# The .Renviron file will be ignored by git for security
+
+# Add your Anthropic API key (preferred for testing)
+ANTHROPIC_API_KEY=your-anthropic-api-key-here
+
+# Add your OpenAI API key (optional)
+OPENAI_API_KEY=your-openai-api-key-here

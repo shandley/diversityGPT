@@ -2,8 +2,7 @@ Package: diversityGPT
 Title: AI-Powered Microbiome Diversity Analysis with Intelligent Synthesis
 Version: 0.0.0.9000
 Authors@R: 
-    person("Scott", "Handley", , "your.email@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+    person("Scott", "Handley", , "scott.handley@example.com", role = c("aut", "cre"))
 Description: Solves the critical decision confusion problem in microbiome diversity 
     analysis by providing intelligent synthesis of multiple diversity metrics. When 
     different metrics give conflicting results, diversityGPT uses consensus algorithms 
