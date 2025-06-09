@@ -17,13 +17,13 @@ function(input, output, session) {
     withProgress(message = "Loading dataset...", {
       if (input$dataset_choice == "global") {
         values$physeq <- GlobalPatterns
-        showNotification("GlobalPatterns dataset loaded", type = "success")
+        showNotification("GlobalPatterns dataset loaded", type = "message")
       } else if (input$dataset_choice == "entero") {
         values$physeq <- enterotype
-        showNotification("Enterotype dataset loaded", type = "success")
+        showNotification("Enterotype dataset loaded", type = "message")
       } else if (input$dataset_choice == "soil") {
         values$physeq <- soilrep
-        showNotification("Soil microbiome dataset loaded", type = "success")
+        showNotification("Soil microbiome dataset loaded", type = "message")
       }
     })
     
@@ -38,7 +38,7 @@ function(input, output, session) {
     tryCatch({
       withProgress(message = "Loading custom dataset...", {
         values$physeq <- readRDS(input$phyloseq_file$datapath)
-        showNotification("Custom dataset loaded successfully", type = "success")
+        showNotification("Custom dataset loaded successfully", type = "message")
       })
       updateUIElements()
     }, error = function(e) {
@@ -137,7 +137,11 @@ function(input, output, session) {
       y = factor(taxa_names, levels = taxa_names[order(mean_abundance)]),
       type = "bar",
       orientation = "h",
-      marker = list(color = viridis::viridis(20))
+      marker = list(color = if(requireNamespace("viridis", quietly = TRUE)) {
+        viridis::viridis(20)
+      } else {
+        heat.colors(20)
+      })
     ) %>%
       layout(
         title = "Top 20 Taxa by Mean Abundance",
@@ -508,7 +512,11 @@ function(input, output, session) {
       labels = quality_data$metric,
       values = quality_data$r2,
       type = "pie",
-      marker = list(colors = viridis::viridis(nrow(quality_data))),
+      marker = list(colors = if(requireNamespace("viridis", quietly = TRUE)) {
+        viridis::viridis(nrow(quality_data))
+      } else {
+        heat.colors(nrow(quality_data))
+      }),
       textinfo = "label+percent",
       hovertemplate = "%{label}<br>R² = %{value:.3f}<extra></extra>"
     ) %>%
@@ -561,7 +569,11 @@ function(input, output, session) {
       x = components[[input$x_component]],
       y = components[[input$y_component]],
       color = color_var,
-      colors = viridis::viridis(length(unique(color_var))),
+      colors = if(requireNamespace("viridis", quietly = TRUE)) {
+        viridis::viridis(length(unique(color_var)))
+      } else {
+        rainbow(length(unique(color_var)))
+      },
       type = "scatter",
       mode = "markers",
       marker = list(size = 10),

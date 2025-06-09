@@ -1,5 +1,11 @@
 # UI for diversityGPT Interactive Explorer
 
+# Ensure shinydashboard is loaded
+if (!requireNamespace("shinydashboard", quietly = TRUE)) {
+  stop("Package 'shinydashboard' is required but not installed.")
+}
+library(shinydashboard)
+
 dashboardPage(
   skin = "blue",
   
@@ -1083,35 +1089,37 @@ dashboardPage(
       )
     ),
     
-    # Help modal
-    bsModal(
-      "help_modal",
-      "diversityGPT Help",
-      trigger = "help_modal_trigger",
-      size = "large",
-      
-      h4("Quick Start Guide"),
-      p("1. Load your data using the Data Upload tab or select an example dataset"),
-      p("2. Run Universal Analysis to extract information components"),
-      p("3. Use Transform Metrics to convert between any diversity metrics"),
-      p("4. Explore visualizations to understand metric relationships"),
-      p("5. Get AI-powered ecological interpretations"),
-      p("6. Export your results in various formats"),
-      
-      hr(),
-      
-      h4("Key Concepts"),
-      tags$ul(
-        tags$li("R (Richness): Information about species count"),
-        tags$li("E (Evenness): Information about distribution uniformity"),
-        tags$li("P (Phylogenetic): Information about evolutionary diversity"),
-        tags$li("S (Spatial): Information about geographic patterns")
-      ),
-      
-      hr(),
-      
-      p("For more information, visit the ",
-        tags$a("documentation", href = "https://github.com/shandley/diversityGPT", target = "_blank"))
-    )
+    # Help modal (conditional on shinyBS availability)
+    if (requireNamespace("shinyBS", quietly = TRUE)) {
+      shinyBS::bsModal(
+        "help_modal",
+        "diversityGPT Help",
+        trigger = "help_modal_trigger",
+        size = "large",
+        
+        h4("Quick Start Guide"),
+        p("1. Load your data using the Data Upload tab or select an example dataset"),
+        p("2. Run Universal Analysis to extract information components"),
+        p("3. Use Transform Metrics to convert between any diversity metrics"),
+        p("4. Explore visualizations to understand metric relationships"),
+        p("5. Get AI-powered ecological interpretations"),
+        p("6. Export your results in various formats"),
+        
+        hr(),
+        
+        h4("Key Concepts"),
+        tags$ul(
+          tags$li("R (Richness): Information about species count"),
+          tags$li("E (Evenness): Information about distribution uniformity"),
+          tags$li("P (Phylogenetic): Information about evolutionary diversity"),
+          tags$li("S (Spatial): Information about geographic patterns")
+        ),
+        
+        hr(),
+        
+        p("For more information, visit the ",
+          tags$a("documentation", href = "https://github.com/shandley/diversityGPT", target = "_blank"))
+      )
+    }
   )
 )
