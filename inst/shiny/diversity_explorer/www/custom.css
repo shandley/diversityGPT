@@ -1,0 +1,323 @@
+/* diversityGPT Explorer Custom Styles */
+
+/* Color scheme */
+:root {
+  --primary-color: #3498db;
+  --secondary-color: #2c3e50;
+  --success-color: #27ae60;
+  --warning-color: #f39c12;
+  --danger-color: #e74c3c;
+  --info-color: #8e44ad;
+  --light-bg: #f8f9fa;
+  --dark-text: #2c3e50;
+  --border-color: #e9ecef;
+}
+
+/* Main layout improvements */
+.content-wrapper {
+  background-color: var(--light-bg);
+}
+
+.box {
+  border-top: 3px solid var(--primary-color);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: box-shadow 0.3s ease;
+}
+
+.box:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.box-primary {
+  border-top-color: var(--primary-color);
+}
+
+.box-success {
+  border-top-color: var(--success-color);
+}
+
+.box-info {
+  border-top-color: var(--info-color);
+}
+
+.box-warning {
+  border-top-color: var(--warning-color);
+}
+
+/* Enhanced buttons */
+.btn {
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.btn-lg {
+  padding: 12px 24px;
+  font-size: 16px;
+}
+
+/* Value boxes enhancement */
+.small-box {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.small-box:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.small-box h3 {
+  font-size: 38px;
+  font-weight: 700;
+}
+
+/* Info boxes */
+.info-box {
+  min-height: 90px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+}
+
+.info-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.info-box-icon {
+  border-radius: 8px 0 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 45px;
+  opacity: 0.8;
+}
+
+/* Tab styling */
+.nav-tabs-custom > .nav-tabs > li.active {
+  border-top-color: var(--primary-color);
+}
+
+.nav-pills > li.active > a {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+/* Progress bars */
+.progress {
+  height: 25px;
+  border-radius: 12px;
+  background-color: #ecf0f1;
+}
+
+.progress-bar {
+  background-color: var(--primary-color);
+  line-height: 25px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Upload area */
+.upload-area {
+  background-color: #fafafa;
+  transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+  background-color: #f0f0f0;
+  border-color: var(--primary-color) !important;
+}
+
+/* Well panels */
+.well {
+  background-color: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* DataTables customization */
+.dataTables_wrapper {
+  padding: 10px 0;
+}
+
+.dataTables_filter input {
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  padding: 6px 12px;
+}
+
+table.dataTable thead th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: var(--dark-text);
+}
+
+/* Plotly toolbar */
+.js-plotly-plot .plotly .modebar {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Notifications */
+.shiny-notification {
+  border-radius: 8px;
+  font-size: 14px;
+  padding: 15px 20px;
+}
+
+.shiny-notification-error {
+  background-color: #fee;
+  border-left: 4px solid var(--danger-color);
+  color: #c33;
+}
+
+.shiny-notification-warning {
+  background-color: #ffeaa7;
+  border-left: 4px solid var(--warning-color);
+  color: #856404;
+}
+
+.shiny-notification-message {
+  background-color: #d1ecf1;
+  border-left: 4px solid var(--info-color);
+  color: #0c5460;
+}
+
+/* Loading animation */
+.shiny-busy-indicator {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+}
+
+.shiny-busy-indicator::after {
+  content: "Processing...";
+  display: block;
+  margin-top: 10px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* Sidebar enhancements */
+.sidebar-menu > li > a {
+  transition: all 0.3s ease;
+}
+
+.sidebar-menu > li > a:hover {
+  border-left: 3px solid var(--primary-color);
+  padding-left: 17px;
+}
+
+/* Modal styling */
+.modal-content {
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 8px 8px 0 0;
+}
+
+.modal-header h4 {
+  color: white;
+  font-weight: 600;
+}
+
+/* Select inputs */
+.selectize-input {
+  border-radius: 4px;
+  border-color: #ddd;
+}
+
+.selectize-input.focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+/* Checkbox and radio styling */
+.checkbox label, .radio label {
+  padding-left: 25px;
+  cursor: pointer;
+}
+
+.checkbox input[type="checkbox"],
+.radio input[type="radio"] {
+  margin-left: -25px;
+  margin-top: 4px;
+}
+
+/* Code output */
+pre {
+  background-color: #f4f4f4;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Help text */
+.help-block {
+  color: #737373;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .btn-lg {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+  
+  .small-box h3 {
+    font-size: 28px;
+  }
+  
+  .info-box-icon {
+    font-size: 35px;
+  }
+}
+
+/* Animation classes */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
