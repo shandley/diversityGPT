@@ -462,7 +462,9 @@ print.universal_information <- function(x, ...) {
     
     for (i in seq_len(nrow(importance))) {
       row <- importance[i, ]
-      cli::cli_text("{row$component}: coef={round(row$mean_coefficient, 3)}, freq={round(row$contribution_frequency, 3)}")
+      coef_text <- if (is.na(row$mean_coefficient)) "0" else round(row$mean_coefficient, 3)
+      freq_text <- if (is.na(row$contribution_frequency)) "0" else round(row$contribution_frequency, 3)
+      cli::cli_text("{row$component}: coef={coef_text}, freq={freq_text}")
     }
   }
   

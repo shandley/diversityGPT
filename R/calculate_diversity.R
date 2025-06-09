@@ -69,14 +69,20 @@ calculate_diversity <- function(physeq,
     
     if (metric %in% c("shannon", "simpson", "invsimpson")) {
       # Use vegan for these metrics
-      values <- vegan::diversity(
-        t(phyloseq::otu_table(physeq)), 
-        index = metric
-      )
+      # Get OTU table in correct orientation (samples as rows)
+      otu_mat <- as.matrix(phyloseq::otu_table(physeq))
+      if (phyloseq::taxa_are_rows(physeq)) {
+        otu_mat <- t(otu_mat)
+      }
+      values <- vegan::diversity(otu_mat, index = metric)
       
     } else if (metric == "chao1") {
       # Use vegan's estimateR for Chao1
-      values <- vegan::estimateR(t(phyloseq::otu_table(physeq)))[1, ]
+      otu_mat <- as.matrix(phyloseq::otu_table(physeq))
+      if (phyloseq::taxa_are_rows(physeq)) {
+        otu_mat <- t(otu_mat)
+      }
+      values <- vegan::estimateR(otu_mat)[1, ]
       
     } else if (metric == "observed") {
       # Count observed OTUs
@@ -85,7 +91,11 @@ calculate_diversity <- function(physeq,
     } else if (metric == "faith_pd") {
       # Calculate Faith's phylogenetic diversity
       # This is a simplified version - in production you'd use picante::pd
-      values <- apply(phyloseq::otu_table(physeq), 2, function(x) {
+      otu_mat <- as.matrix(phyloseq::otu_table(physeq))
+      if (phyloseq::taxa_are_rows(physeq)) {
+        otu_mat <- t(otu_mat)
+      }
+      values <- apply(otu_mat, 1, function(x) {
         sum(x > 0)  # Placeholder - would calculate actual PD
       })
     }

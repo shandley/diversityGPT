@@ -6,15 +6,16 @@
 [![R-CMD-check](https://github.com/shandley/diversityGPT/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/shandley/diversityGPT/actions/workflows/check-standard.yaml)
 <!-- badges: end -->
 
-**diversityGPT** solves the critical "decision confusion" problem in microbiome diversity analysis. When different diversity metrics give conflicting results (e.g., Shannon says significant, Simpson says not), researchers often struggle to interpret what's really happening. This package provides intelligent synthesis and AI-powered interpretation to turn confusion into clarity.
+**diversityGPT** revolutionizes microbiome diversity analysis with the world's first **Universal Diversity Metric Transformation System**. Beyond solving "decision confusion" when metrics conflict, it mathematically relates ANY diversity metrics through information theory, enabling unprecedented meta-analysis and cross-study comparisons.
 
-## Key Features
+## 🚀 Revolutionary Features
 
-- 📊 **Multi-Metric Analysis**: Calculate all major diversity metrics at once
-- 🤝 **Consensus Algorithms**: Resolve conflicts between different metrics  
-- 🧠 **AI-Powered Interpretation**: Get plain-language explanations of your results
-- 📈 **Smart Visualizations**: See patterns across multiple metrics
-- 🔬 **Ecological Intelligence**: Understand biological mechanisms behind patterns
+- 🔄 **Universal Metric Transformation**: Convert between ANY diversity metrics (Shannon → Simpson, Chao1 → Faith's PD, etc.)
+- 🧬 **Information Decomposition**: Every metric = R (Richness) + E (Evenness) + P (Phylogenetic) + S (Spatial) components
+- 🤝 **Consensus Algorithms**: Resolve conflicts between different metrics with R² > 0.9 accuracy
+- 🧠 **AI-Powered Interpretation**: Dual LLM support (Anthropic Claude + OpenAI GPT) for ecological insights
+- 📊 **Advanced Visualizations**: Interactive networks, information dashboards, and component analysis
+- 🔬 **Cross-Study Standardization**: Enable meta-analysis across different metric sets
 
 ## Installation
 
@@ -31,54 +32,50 @@ devtools::install_github("shandley/diversityGPT")
 library(diversityGPT)
 library(phyloseq)
 
-# Check API setup (one-time)
-check_api_setup()
+# Load example data
+data(GlobalPatterns)
 
-# Load your data (or use example)
-data(example_physeq)
+# Extract universal information components
+universal_info <- extract_universal_information(GlobalPatterns)
+print(universal_info)  # Shows R² = 0.939 deconvolution quality
 
-# Calculate all diversity metrics at once
-div_results <- calculate_diversity(
-  example_physeq,
-  metrics = c("shannon", "simpson", "chao1", "observed"),
-  groups = "Group"
+# Transform between ANY metrics
+predicted <- universal_diversity_transform(
+  source_metrics = c(shannon = 2.3),
+  target_metrics = c("simpson", "chao1", "faith_pd"),
+  transformation_matrix = universal_info$transformation_matrix
 )
 
-# Get consensus across metrics
-consensus <- consensus_diversity(div_results)
+# Visualize metric relationships
+plot_diversity_network(universal_info, interactive = TRUE)
 
 # Get AI-powered interpretation
 interpretation <- interpret_diversity(
-  consensus,
+  universal_info,
   context = list(
     environment = "human_gut",
     condition = "treatment_vs_control"
   )
 )
-
-print(interpretation)
 ```
 
-## The Problem We Solve
+## The Universal Framework
 
-Imagine you're analyzing gut microbiome data:
-- Shannon index shows p = 0.03 (significant difference)
-- Simpson index shows p = 0.12 (no significant difference)  
-- Chao1 shows p = 0.008 (highly significant)
+Traditional diversity analysis treats metrics as isolated measurements. **diversityGPT** reveals they're all mathematically related through information theory:
 
-What do you conclude? This confusion is extremely common and leads to:
-- Cherry-picking favorable results
-- Missing important biological patterns
-- Inconsistent interpretations across studies
+### The Problem We Solve
 
-**diversityGPT** provides a principled solution by synthesizing all metrics and explaining what the patterns mean biologically.
+1. **Decision Confusion**: When Shannon says significant but Simpson doesn't, what's really happening?
+2. **Missing Metrics**: Need Faith's PD but only have Shannon? We can predict it with R² > 0.9
+3. **Cross-Study Comparison**: Different studies use different metrics? We standardize them all
+4. **Ecological Interpretation**: What do these mathematical patterns mean biologically?
 
-## How It Works
+### How It Works
 
-1. **Calculate Everything**: Run all diversity metrics in a standardized way
-2. **Find Consensus**: Use statistical methods to resolve conflicts
-3. **Interpret Patterns**: AI explains what metric combinations mean
-4. **Generate Hypotheses**: Get suggestions for follow-up analyses
+1. **Universal Decomposition**: Every diversity metric = R + E + P + S components
+2. **Any-to-Any Transformation**: Convert between ANY metrics using our transformation matrix
+3. **Quality Assessment**: Know exactly how reliable each transformation is (R² scores)
+4. **AI Integration**: Get real-time ecological interpretation of patterns
 
 ## Setting Up API Keys
 

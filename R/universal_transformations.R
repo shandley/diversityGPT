@@ -237,15 +237,21 @@ estimate_information_components <- function(source_df, transformation_matrix) {
       target_value <- metric_values[i] - coefficients["intercept"]
       
       # Simple heuristic: assign proportional to coefficient magnitudes
-      total_coef <- sum(abs(coefficients[component_cols]))
+      # Extract only the component coefficients that exist
+      available_coefs <- coefficients[intersect(names(coefficients), component_cols)]
       
-      if (total_coef > 0) {
-        for (comp in component_cols) {
-          if (comp %in% names(coefficients)) {
-            weight <- abs(coefficients[comp]) / total_coef
-            estimated_components[i, comp] <- estimated_components[i, comp] + 
-                                           (target_value * weight * metric_transform$r_squared)
-            component_weights[comp] <- component_weights[comp] + metric_transform$r_squared
+      if (length(available_coefs) > 0) {
+        total_coef <- sum(abs(available_coefs), na.rm = TRUE)
+        
+        if (!is.na(total_coef) && total_coef > 0) {
+          for (comp in names(available_coefs)) {
+            coef_value <- available_coefs[comp]
+            if (!is.na(coef_value)) {
+              weight <- abs(coef_value) / total_coef
+              estimated_components[i, comp] <- estimated_components[i, comp] + 
+                                             (target_value * weight * metric_transform$r_squared)
+              component_weights[comp] <- component_weights[comp] + metric_transform$r_squared
+            }
           }
         }
       }
