@@ -80,9 +80,19 @@ make_api_request <- function(url, body, api_key, provider = "anthropic") {
   
   tryCatch({
     resp <- httr2::req_perform(req)
+    
+    # Check response status
+    if (httr2::resp_status(resp) != 200) {
+      cli::cli_alert_danger("API returned status {httr2::resp_status(resp)}")
+      cli::cli_alert_info("Response body: {httr2::resp_body_string(resp)}")
+      return(NULL)
+    }
+    
     httr2::resp_body_json(resp)
   }, error = function(e) {
     cli::cli_alert_danger("API request failed: {e$message}")
+    cli::cli_alert_info("URL: {url}")
+    cli::cli_alert_info("Provider: {provider}")
     NULL
   })
 }

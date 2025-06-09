@@ -189,7 +189,7 @@ interpret_with_anthropic <- function(patterns, context_prompt, analysis_type, hy
   url <- "https://api.anthropic.com/v1/messages"
   
   body <- list(
-    model = "claude-3-5-sonnet-20241022",
+    model = "claude-3-5-sonnet-20240620",
     max_tokens = 1500,
     temperature = temperature,
     messages = list(
@@ -200,11 +200,30 @@ interpret_with_anthropic <- function(patterns, context_prompt, analysis_type, hy
     )
   )
   
-  response <- make_api_request(url, body, api_key, "anthropic")
+  # Use same structure as working debug function
+  headers <- list(
+    "x-api-key" = api_key,
+    "anthropic-version" = "2023-06-01",
+    "content-type" = "application/json"
+  )
   
-  if (is.null(response)) {
-    stop("Failed to get response from Anthropic API")
-  }
+  req <- httr2::request(url) |>
+    httr2::req_headers(!!!headers) |>
+    httr2::req_body_json(body) |>
+    httr2::req_timeout(30)
+  
+  tryCatch({
+    resp <- httr2::req_perform(req)
+    
+    if (httr2::resp_status(resp) != 200) {
+      stop(paste("API returned status", httr2::resp_status(resp)))
+    }
+    
+    response <- httr2::resp_body_json(resp)
+    
+  }, error = function(e) {
+    stop(paste("Failed to get response from Anthropic API:", e$message))
+  })
   
   # Parse response
   content <- response$content[[1]]$text
@@ -222,7 +241,7 @@ interpret_with_openai <- function(patterns, context_prompt, analysis_type, hypot
   url <- "https://api.openai.com/v1/chat/completions"
   
   body <- list(
-    model = "gpt-4",
+    model = "gpt-4o-mini",
     max_tokens = 1500,
     temperature = temperature,
     messages = list(
@@ -237,11 +256,29 @@ interpret_with_openai <- function(patterns, context_prompt, analysis_type, hypot
     )
   )
   
-  response <- make_api_request(url, body, api_key, "openai")
+  # Use same structure as working debug function
+  headers <- list(
+    "Authorization" = paste("Bearer", api_key),
+    "Content-Type" = "application/json"
+  )
   
-  if (is.null(response)) {
-    stop("Failed to get response from OpenAI API")
-  }
+  req <- httr2::request(url) |>
+    httr2::req_headers(!!!headers) |>
+    httr2::req_body_json(body) |>
+    httr2::req_timeout(30)
+  
+  tryCatch({
+    resp <- httr2::req_perform(req)
+    
+    if (httr2::resp_status(resp) != 200) {
+      stop(paste("API returned status", httr2::resp_status(resp)))
+    }
+    
+    response <- httr2::resp_body_json(resp)
+    
+  }, error = function(e) {
+    stop(paste("Failed to get response from OpenAI API:", e$message))
+  })
   
   # Parse response
   content <- response$choices[[1]]$message$content
