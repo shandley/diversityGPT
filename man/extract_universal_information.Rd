@@ -39,18 +39,18 @@ and Spatial (S). Enables mathematical relationships discovery and
 any-to-any metric transformations.
 }
 \examples{
-\dontrun{
-data(example_physeq)
+# Create small demo dataset
+demo_data <- create_demo_phyloseq(n_samples = 5, n_taxa = 20)
 
-# Universal information extraction
+# Extract universal information
 universal_info <- extract_universal_information(
-  example_physeq,
-  groups = "treatment",
-  include_phylogenetic = TRUE
+  demo_data,
+  include_phylogenetic = FALSE  # Faster for examples
 )
 
-# View information components
-print(universal_info)
-plot(universal_info)
-}
+# View structure
+names(universal_info)
+
+# Check components
+head(universal_info$information_components, 3)
 }

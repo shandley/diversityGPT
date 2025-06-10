@@ -39,18 +39,20 @@ between ANY diversity metrics. Enables prediction of missing metrics,
 cross-study standardization, and relationship discovery.
 }
 \examples{
-\dontrun{
-# Extract universal information first
-universal_info <- extract_universal_information(phyloseq_obj)
+# Create demo data and extract universal information
+demo_data <- create_demo_phyloseq(n_samples = 10, n_taxa = 30)
+universal_info <- extract_universal_information(demo_data, 
+                                              include_phylogenetic = FALSE)
 
-# Transform Shannon to any other metric
-available_metrics <- c(shannon = 2.3, observed = 45)
-predicted <- universal_diversity_transform(
-  source_metrics = available_metrics,
-  target_metrics = c("simpson", "chao1", "faith_pd"),
-  transformation_matrix = universal_info$transformation_matrix
+# Transform Shannon to Simpson
+source_metrics <- data.frame(
+  shannon = c(2.1, 2.3, 1.9),
+  row.names = c("Sample1", "Sample2", "Sample3")
 )
 
-print(predicted)
-}
+transformed <- universal_diversity_transform(
+  source_metrics = source_metrics,
+  target_metrics = c("simpson"),
+  transformation_matrix = universal_info$transformation_matrix
+)
 }

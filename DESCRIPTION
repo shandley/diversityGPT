@@ -2,8 +2,7 @@ Package: diversityGPT
 Title: Universal Diversity Analysis with AI-Powered Ecological Intelligence
 Version: 1.0.0
 Authors@R: c(
-    person("Scott", "Handley", , "scott.handley@wustl.edu", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0000-0000-0000")))
+    person("Scott", "Handley", , "scott.handley@wustl.edu", role = c("aut", "cre")))
 Description: Transforms microbiome diversity analysis through a revolutionary mathematical
     framework for universal metric transformation. Implements information theory-based
     deconvolution to convert between any diversity metrics (Shannon, Simpson, Chao1,

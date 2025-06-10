@@ -57,6 +57,14 @@ universal_diversity_transform <- function(source_metrics,
     )
   } else {
     source_df <- as.data.frame(source_metrics)
+    # Add sample_id if not present
+    if (!"sample_id" %in% names(source_df)) {
+      if (!is.null(rownames(source_df)) && !all(rownames(source_df) == as.character(1:nrow(source_df)))) {
+        source_df$sample_id <- rownames(source_df)
+      } else {
+        source_df$sample_id <- paste0("sample_", 1:nrow(source_df))
+      }
+    }
   }
   
   # Estimate information components from source metrics
@@ -192,17 +200,26 @@ estimate_information_components <- function(source_df, transformation_matrix) {
     cli::cli_alert_warning("No usable metrics found in transformation matrix, using default components")
     
     # Return default/neutral information components
+    # Get sample IDs
+    if ("sample_id" %in% names(source_df)) {
+      sample_ids <- source_df$sample_id
+    } else if (!is.null(rownames(source_df))) {
+      sample_ids <- rownames(source_df)
+    } else {
+      sample_ids <- paste0("sample_", 1:nrow(source_df))
+    }
+    
     result <- data.frame(
-      sample_id = source_df$sample_id,
-      R_component = 0.25,
-      E_component = 0.25, 
-      P_component = 0.25,
-      S_component = 0.25,
-      total_information = 1.0,
-      R_proportion = 0.25,
-      E_proportion = 0.25,
-      P_proportion = 0.25,
-      S_proportion = 0.25,
+      sample_id = sample_ids,
+      R_component = rep(0.25, nrow(source_df)),
+      E_component = rep(0.25, nrow(source_df)), 
+      P_component = rep(0.25, nrow(source_df)),
+      S_component = rep(0.25, nrow(source_df)),
+      total_information = rep(1.0, nrow(source_df)),
+      R_proportion = rep(0.25, nrow(source_df)),
+      E_proportion = rep(0.25, nrow(source_df)),
+      P_proportion = rep(0.25, nrow(source_df)),
+      S_proportion = rep(0.25, nrow(source_df)),
       stringsAsFactors = FALSE
     )
     
@@ -272,7 +289,15 @@ estimate_information_components <- function(source_df, transformation_matrix) {
   
   # Convert to data.frame
   result <- as.data.frame(estimated_components)
-  result$sample_id <- source_df$sample_id
+  
+  # Get sample IDs
+  if ("sample_id" %in% names(source_df)) {
+    sample_ids <- source_df$sample_id
+  } else if (!is.null(rownames(source_df))) {
+    sample_ids <- rownames(source_df)
+  } else {
+    sample_ids <- paste0("sample_", 1:nrow(source_df))
+  }
   
   # Calculate total information and proportions
   result$total_information <- rowSums(result[, component_cols, drop = FALSE])
@@ -281,6 +306,9 @@ estimate_information_components <- function(source_df, transformation_matrix) {
     prop_col <- paste0(gsub("_component", "", comp), "_proportion")
     result[[prop_col]] <- result[[comp]] / (result$total_information + 1e-10)
   }
+  
+  # Add sample_id as first column
+  result <- cbind(data.frame(sample_id = sample_ids, stringsAsFactors = FALSE), result)
   
   return(result)
 }

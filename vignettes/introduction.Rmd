@@ -36,28 +36,25 @@ diversityGPT revolutionizes microbiome diversity analysis by solving the "metric
 ### Basic Analysis
 
 ```{r basic-analysis}
-# Load example microbiome data
-data(GlobalPatterns)
+# Create small demo dataset for fast example
+demo_data <- create_demo_phyloseq(n_samples = 10, n_taxa = 30)
 
-# Run comprehensive diversity analysis
-results <- diversity_suite(
-  phyloseq_obj = GlobalPatterns,
-  metrics = c("shannon", "simpson", "chao1", "faith_pd"),
-  consensus_method = "adaptive"
+# Extract universal information
+results <- extract_universal_information(
+  demo_data,
+  include_phylogenetic = FALSE  # Faster without phylogenetic
 )
 
-# View results
-print(results)
+# View results structure
+names(results)
+head(results$information_components, 3)
 ```
 
 ### Visualize Diversity Patterns
 
 ```{r visualize}
-# Plot diversity metrics
-plot(results, type = "metrics")
-
-# Show consensus vs individual metrics
-plot(results, type = "consensus")
+# Plot information components
+plot(results, type = "components")
 ```
 
 ## Universal Information Framework
@@ -66,7 +63,7 @@ The core innovation of diversityGPT is the ability to decompose any diversity me
 
 ```{r universal-info}
 # Extract universal information
-universal_info <- extract_universal_information(GlobalPatterns)
+universal_info <- extract_universal_information(demo_data)
 
 # View information components
 head(universal_info$information_components)
@@ -80,20 +77,21 @@ plot(universal_info, type = "components")
 Transform between any diversity metrics:
 
 ```{r transformation}
-# Example: You have Shannon, want Simpson and Chao1
+# Example: You have Shannon, want Simpson
+sample_names <- sample_names(demo_data)[1:3]
 source_metrics <- data.frame(
-  shannon = c(2.1, 2.5, 1.8, 2.3),
-  row.names = paste0("Sample", 1:4)
+  shannon = c(2.1, 2.5, 1.8),
+  row.names = sample_names
 )
 
 # Transform to other metrics
 transformed <- universal_diversity_transform(
   source_metrics = source_metrics,
-  target_metrics = c("simpson", "chao1"),
+  target_metrics = c("simpson"),
   transformation_matrix = universal_info$transformation_matrix
 )
 
-print(transformed)
+print(transformed$predicted_metrics)
 ```
 
 ## AI-Powered Interpretation
@@ -125,15 +123,20 @@ print(interpretation$hypotheses)
 When metrics disagree, use consensus algorithms:
 
 ```{r consensus}
-# Run consensus analysis
-consensus <- consensus_diversity(
-  phyloseq_obj = GlobalPatterns,
-  metrics = c("shannon", "simpson", "observed"),
-  method = "information_theoretic"
+# First calculate diversity metrics
+div_results <- calculate_diversity(
+  demo_data,
+  metrics = c("shannon", "simpson", "observed")
 )
 
-# Plot confidence intervals
-plot(consensus, type = "bootstrap")
+# Run consensus analysis
+consensus <- consensus_diversity(
+  div_results,
+  method = "weighted_mean"
+)
+
+# View consensus results
+print(consensus$method_weights)
 ```
 
 ## Interactive Exploration

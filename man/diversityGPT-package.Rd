@@ -4,11 +4,11 @@
 \name{diversityGPT-package}
 \alias{diversityGPT}
 \alias{diversityGPT-package}
-\title{diversityGPT: Universal Diversity Metric Transformation for Microbiome Analysis}
+\title{diversityGPT: Universal Diversity Analysis with AI-Powered Ecological Intelligence}
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Solves the critical decision confusion problem in microbiome diversity analysis by providing intelligent synthesis of multiple diversity metrics. When different metrics give conflicting results, diversityGPT uses consensus algorithms and AI-powered interpretation to provide clear, actionable insights.
+Transforms microbiome diversity analysis through a revolutionary mathematical framework for universal metric transformation. Implements information theory-based deconvolution to convert between any diversity metrics (Shannon, Simpson, Chao1, Faith's PD, UniFrac, etc.) by decomposing them into fundamental components: Richness (R), Evenness (E), Phylogenetic (P), and Spatial (S). Features include AI-powered ecological interpretation, assembly mechanism detection, hypothesis generation, and interactive visualizations. Enables standardized cross-study comparisons and meta-analyses through metric harmonization. Integrates with 'phyloseq' for seamless microbiome workflow integration.
 }
 \seealso{
 Useful links:
@@ -19,7 +19,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Scott Handley \email{scott.handley@example.com}
+\strong{Maintainer}: Scott Handley \email{scott.handley@wustl.edu}
 
 }
 \keyword{internal}
