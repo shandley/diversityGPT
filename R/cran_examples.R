@@ -71,6 +71,16 @@ create_demo_phyloseq <- function(n_samples = 5, n_taxa = 20, seed = 42) {
 #'
 #' @return A smaller phyloseq object
 #' @export
+#' @examples
+#' # Create a demo dataset first
+#' demo_full <- create_demo_phyloseq(n_samples = 20, n_taxa = 100)
+#' 
+#' # Create a smaller subset
+#' demo_small <- create_demo_subset(demo_full, n_samples = 5, n_taxa = 20)
+#' 
+#' # Check dimensions
+#' phyloseq::nsamples(demo_small)
+#' phyloseq::ntaxa(demo_small)
 create_demo_subset <- function(physeq, n_samples = 5, n_taxa = 20, seed = 42) {
   set.seed(seed)
   

@@ -19,13 +19,12 @@ bibentry(
   bibtype    = "Article", 
   title      = "Universal Information Theory Framework for Microbiome Diversity Analysis",
   author     = person("Scott", "Handley"),
-  journal    = "bioRxiv",
+  journal    = "In preparation",
   year       = "2025",
-  note       = "Preprint",
-  doi        = "10.1101/2025.01.01.123456",
+  note       = "Manuscript in preparation",
   textVersion = paste(
     "Handley, S. (2025).",
     "Universal Information Theory Framework for Microbiome Diversity Analysis.",
-    "bioRxiv. doi: 10.1101/2025.01.01.123456"
+    "Manuscript in preparation."
   )
 )

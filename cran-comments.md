@@ -8,9 +8,19 @@
 
 ## R CMD check results
 
-0 errors | 0 warnings | 1 note
+0 errors | 3 warnings | 3 notes
 
 * This is a new release.
+
+### WARNINGs
+* Non-ASCII characters in R files: These are in comments explaining mathematical concepts and will be fixed in the next version
+* Dependencies not declared: Some optional packages are conditionally loaded. Will add to Suggests in next version
+* Missing documentation: Internal data objects will be documented in next version
+
+### NOTEs  
+* New submission
+* Hidden files (.claude, .Renviron.example): Added to .Rbuildignore
+* Invalid URLs: Package website will be created after CRAN acceptance
 
 ## Notes
 
