@@ -1,6 +1,6 @@
 Package: diversityGPT
-Title: AI-Powered Microbiome Diversity Analysis with Intelligent Synthesis
-Version: 0.0.0.9000
+Title: Universal Diversity Metric Transformation for Microbiome Analysis
+Version: 0.2.0
 Authors@R: 
     person("Scott", "Handley", , "scott.handley@example.com", role = c("aut", "cre"))
 Description: Solves the critical decision confusion problem in microbiome diversity 
@@ -18,7 +18,10 @@ Imports:
     httr2,
     jsonlite,
     cli,
-    rlang
+    rlang,
+    digest,
+    utils,
+    methods
 Suggests: 
     ggplot2,
     plotly,
@@ -26,7 +29,17 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0),
     mockery,
-    withr
+    withr,
+    shiny,
+    shinydashboard,
+    DT,
+    networkD3,
+    biomformat,
+    reshape2,
+    dplyr,
+    microbenchmark,
+    parallel
+VignetteBuilder: knitr
 Config/testthat/edition: 3
 Depends: 
     R (>= 4.0)

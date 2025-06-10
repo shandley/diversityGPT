@@ -1,0 +1,369 @@
+---
+title: "Interactive Exploration with diversityGPT Shiny Apps"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Interactive Exploration with Shiny Apps}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 8,
+  fig.height = 6,
+  warning = FALSE,
+  message = FALSE,
+  eval = FALSE  # Don't evaluate Shiny code in vignette
+)
+```
+
+## Overview
+
+diversityGPT provides four interactive Shiny applications that make the universal transformation framework accessible through intuitive web interfaces. These apps allow real-time exploration, transformation, and interpretation of diversity metrics without writing code.
+
+```{r setup}
+library(diversityGPT)
+```
+
+## Available Shiny Applications
+
+### 1. Main Diversity Explorer
+
+The flagship application providing the complete diversityGPT workflow in an interactive dashboard.
+
+```{r main-explorer}
+# Launch the main explorer
+launch_diversity_explorer()
+
+# Or pre-load with example data
+explore_example("GlobalPatterns")
+```
+
+**Features:**
+- 📊 **Data Upload**: Load phyloseq objects or use built-in datasets
+- 🔬 **Universal Analysis**: Extract R, E, P, S components interactively
+- 🔄 **Transform Metrics**: Real-time conversion between any diversity metrics
+- 📈 **Visualizations**: Interactive network plots and component dashboards
+- 🧠 **AI Interpretation**: Get ecological insights powered by LLMs
+- 💾 **Export Results**: Download analyses in multiple formats
+
+### 2. Component Explorer
+
+An interactive widget to understand how R, E, P, S components create diversity metrics.
+
+```{r component-explorer}
+# Launch the component explorer
+launch_component_explorer()
+```
+
+**Features:**
+- 🎛️ **Interactive Sliders**: Adjust R, E, P, S values in real-time
+- 📊 **Live Metric Updates**: See how components affect Shannon, Simpson, etc.
+- 🎨 **Visual Feedback**: Color-coded contributions and relationships
+- 📐 **Mathematical Display**: View the underlying equations
+
+### 3. Enhanced Component Explorer
+
+Advanced visualization showing the mathematical DNA of diversity metrics.
+
+```{r enhanced-explorer}
+# Launch the enhanced explorer
+launch_enhanced_explorer()
+```
+
+**Features:**
+- 📐 **Live Mathematical Equations**: See formulas update as you adjust parameters
+- 📊 **Component Contribution Bars**: Visual breakdown of each metric
+- 🔬 **Biological Interpretation**: Real-time ecological meaning
+- 📈 **3D Response Surfaces**: Explore metric landscapes
+- 🎯 **Prediction vs Reality**: Compare mathematical predictions with actual values
+
+### 4. Simple Explorer
+
+A lightweight version with core functionality and minimal dependencies.
+
+```{r simple-explorer}
+# Launch the simple explorer
+launch_simple_explorer()
+```
+
+**Features:**
+- 🚀 **Fast Loading**: Minimal dependencies for quick access
+- 📊 **Core Functions**: Essential transformation capabilities
+- 💻 **Low Resource**: Works on systems with limited resources
+- 🔧 **Fallback Option**: Automatically used if main app fails
+
+## Using the Main Diversity Explorer
+
+### Step 1: Loading Data
+
+The explorer offers multiple ways to load data:
+
+1. **Built-in Datasets**: Click "Load Dataset" and select from GlobalPatterns, Enterotype, or Soil microbiome
+2. **Upload Your Own**: Use the file upload to load a saved phyloseq object (.rds file)
+3. **Dataset Browser**: Browse and filter from 30+ available datasets
+
+### Step 2: Universal Analysis
+
+Once data is loaded:
+
+1. Navigate to the "🔬 Universal Analysis" tab
+2. Select grouping variable (optional)
+3. Choose whether to include phylogenetic components
+4. Click "Run Universal Analysis"
+
+The app will:
+- Extract R, E, P, S components from all samples
+- Build the transformation matrix
+- Show quality metrics (R² values)
+- Display component distributions
+
+### Step 3: Transform Metrics
+
+In the "🔄 Transform Metrics" tab:
+
+1. Select source metrics (what you have)
+2. Choose target metrics (what you want)
+3. Click "Transform"
+4. View predictions with confidence intervals
+5. See transformation quality (R²)
+
+### Step 4: Visualizations
+
+The "📈 Visualizations" tab provides:
+
+- **Network Plot**: Interactive graph showing metric relationships
+- **Component Dashboard**: Multi-panel view of R, E, P, S distributions
+- **Quality Matrix**: Heatmap of transformation reliability
+- **3D Surfaces**: Explore metric landscapes (enhanced explorer)
+
+### Step 5: AI Interpretation
+
+Get ecological insights in the "🧠 AI Interpretation" tab:
+
+1. Ensure API key is configured (see setup below)
+2. Add study context (environment, conditions, hypothesis)
+3. Click "Generate Interpretation"
+4. Receive ecological insights and hypotheses
+
+### Step 6: Export Results
+
+Download your analysis from the "💾 Export Results" tab:
+
+- **R Object (.rds)**: Complete results for further analysis
+- **HTML Report**: Interactive report with all visualizations
+- **CSV Data**: Tabular results for other software
+
+## Dataset Browser Module
+
+The dataset browser provides access to 30+ curated microbiome datasets:
+
+**Categories:**
+- **Built-in**: Classic datasets from phyloseq package
+- **Precomputed**: Datasets with pre-calculated universal components
+- **External**: Links to download larger datasets
+
+**Filtering Options:**
+- Data type (16S, Shotgun)
+- Environment (Human gut, Soil, Marine, etc.)
+- Sample size
+- Availability of phylogenetic tree
+
+**Search Functionality:**
+- Search by dataset name
+- Filter by tags
+- Find datasets with specific characteristics
+
+## Component Explorer Features
+
+### Understanding the Interface
+
+The component explorer shows how diversity metrics emerge from information components:
+
+```
+R (Richness): 0 ----[slider]---- 100
+E (Evenness): 0 ----[slider]---- 100  
+P (Phylogenetic): 0 ----[slider]---- 100
+S (Spatial): 0 ----[slider]---- 100
+```
+
+### Live Metric Updates
+
+As you adjust sliders, see real-time updates:
+- Shannon diversity
+- Simpson diversity
+- Observed richness
+- Pielou's evenness
+- Faith's PD (if P > 0)
+
+### Preset Scenarios
+
+Quick-access buttons for ecological scenarios:
+- **Low Diversity**: Few species, uneven (R=20, E=30)
+- **High Diversity**: Many species, even (R=80, E=80)
+- **Phylogenetic Signal**: Strong evolutionary component (P=70)
+- **Spatial Pattern**: Geographic clustering (S=60)
+
+## Enhanced Explorer Advanced Features
+
+### Mathematical Equation Display
+
+See the exact mathematical relationships:
+
+```
+Shannon = 0.35×R + 0.45×E + 0.15×P + 0.05×S = 2.34
+         ├─0.82─┤ ├─1.03─┤ ├─0.35─┤ ├─0.14─┤
+```
+
+### Component Contribution Visualization
+
+Visual bars showing each component's contribution:
+```
+R: ████████████░░░░ 35%
+E: ████████████████ 45%
+P: ████░░░░░░░░░░░░ 15%
+S: ██░░░░░░░░░░░░░░  5%
+```
+
+### Biological Interpretation Panel
+
+Real-time ecological meaning:
+- **High R, Low E**: "Many species but dominated by few - suggests environmental filtering"
+- **High E, Low R**: "Few species but evenly distributed - mature stable community"
+- **High P**: "Strong phylogenetic signal - niche conservatism or habitat filtering"
+
+## API Configuration
+
+To enable AI-powered interpretations:
+
+### Option 1: Environment Variable
+```bash
+# Add to ~/.Renviron
+ANTHROPIC_API_KEY=your-key-here
+# or
+OPENAI_API_KEY=your-key-here
+```
+
+### Option 2: In-App Configuration
+1. Look for "API Status" in the sidebar
+2. Click "Configure API"
+3. Enter your API key
+4. Test connection
+
+## Performance Tips
+
+### For Large Datasets
+
+1. **Use Caching**: Enable caching for faster repeated analyses
+2. **Subset First**: Consider analyzing a subset before full dataset
+3. **Pre-compute**: Use `cached_extract_universal_information()` before launching app
+
+### Memory Management
+
+```{r memory-tips}
+# Pre-compute and save results
+universal_info <- cached_extract_universal_information(large_phyloseq)
+saveRDS(universal_info, "precomputed_universal.rds")
+
+# Then load in app instead of computing
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**App won't launch:**
+- Check required packages: `shiny`, `shinydashboard`, `plotly`, `DT`
+- Try simple explorer first: `launch_simple_explorer()`
+- Check for port conflicts
+
+**Slow performance:**
+- Reduce dataset size
+- Enable caching
+- Use precomputed results
+- Close other applications
+
+**API errors:**
+- Verify API key is correct
+- Check internet connection
+- Ensure you have API credits
+- Try different provider (OpenAI vs Anthropic)
+
+**Visualization issues:**
+- Update plotly: `install.packages("plotly")`
+- Clear browser cache
+- Try different browser
+- Check console for JavaScript errors
+
+### Getting Help
+
+```{r help}
+# Check your setup
+check_shiny_setup <- function() {
+  pkgs <- c("shiny", "shinydashboard", "plotly", "DT", "networkD3")
+  installed <- sapply(pkgs, requireNamespace, quietly = TRUE)
+  
+  cat("Package Status:\n")
+  for (i in seq_along(pkgs)) {
+    cat(sprintf("  %s: %s\n", pkgs[i], 
+                ifelse(installed[i], "✓ Installed", "✗ Missing")))
+  }
+  
+  cat("\nApp Files:\n")
+  app_dir <- system.file("shiny", "diversity_explorer", package = "diversityGPT")
+  cat("  App directory:", ifelse(dir.exists(app_dir), "✓ Found", "✗ Missing"), "\n")
+  
+  if (dir.exists(app_dir)) {
+    files <- c("app.R", "ui.R", "server.R")
+    for (f in files) {
+      exists <- file.exists(file.path(app_dir, f))
+      cat(sprintf("  %s: %s\n", f, ifelse(exists, "✓ Found", "✗ Missing")))
+    }
+  }
+}
+
+# Run the check
+check_shiny_setup()
+```
+
+## Advanced Usage
+
+### Embedding in Your Own Shiny App
+
+You can use diversityGPT modules in your own applications:
+
+```{r embed-module}
+# In your app's UI
+ui <- fluidPage(
+  dataset_browser_ui("my_browser")
+)
+
+# In your server
+server <- function(input, output, session) {
+  # Returns reactive phyloseq object when user loads data
+  loaded_data <- dataset_browser_server("my_browser")
+  
+  observe({
+    req(loaded_data())
+    # Use the loaded phyloseq object
+    print(loaded_data())
+  })
+}
+```
+
+### Customizing the Apps
+
+The apps use standard Shiny conventions and can be customized:
+
+1. Copy app files to your project
+2. Modify UI elements in `ui.R`
+3. Adjust calculations in `server.R`
+4. Add custom CSS in `www/custom.css`
+
+## Conclusion
+
+The diversityGPT Shiny applications make the revolutionary universal transformation framework accessible to all researchers, regardless of programming experience. Whether you're exploring component relationships, transforming between metrics, or seeking ecological interpretation, these interactive tools provide immediate insights into your microbiome data.
+
+For more advanced usage and scripting, see `vignette("universal-transformation")` and `vignette("dataset-management")`.

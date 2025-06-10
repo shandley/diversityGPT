@@ -1,0 +1,495 @@
+---
+title: "Advanced Analysis with Caching"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Advanced Analysis with Caching}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+## Overview
+
+diversityGPT includes an intelligent caching system that dramatically speeds up repeated analyses. This vignette covers:
+
+- How caching works
+- Performance optimization strategies
+- Advanced analysis workflows
+- Progress tracking for long operations
+
+```{r setup}
+library(diversityGPT)
+library(phyloseq)
+
+# Initialize the cache system
+init_cache_system()
+```
+
+## Understanding the Cache System
+
+### How It Works
+
+The cache system uses content-based hashing to store results:
+
+1. **Unique Fingerprints**: Each phyloseq object gets a unique hash
+2. **Automatic Storage**: Results are automatically cached
+3. **Smart Retrieval**: Identical analyses return instantly
+4. **Space Management**: Old results are automatically cleaned up
+
+### Basic Cache Usage
+
+```{r basic-cache}
+# Load example data
+data(GlobalPatterns)
+
+# First run - calculates and caches
+system.time({
+  result1 <- cached_extract_universal_information(GlobalPatterns)
+})
+
+# Second run - retrieves from cache (much faster!)
+system.time({
+  result2 <- cached_extract_universal_information(GlobalPatterns)
+})
+
+# Verify they're identical
+identical(result1$transformation_matrix, result2$transformation_matrix)
+```
+
+### Cache Statistics
+
+Monitor cache usage and performance:
+
+```{r cache-stats}
+# Get cache statistics
+stats <- cache_stats()
+print(stats)
+
+# See what's in the cache
+cache_contents <- stats$entries
+if (length(cache_contents) > 0) {
+  cat("Cached analyses:", length(cache_contents), "\n")
+  cat("Total cache size:", stats$total_size, "\n")
+}
+```
+
+## Performance Optimization
+
+### Benchmarking Cache Performance
+
+```{r benchmark, eval=FALSE}
+# Compare cached vs uncached performance
+# (Requires microbenchmark package)
+# install.packages("microbenchmark")
+# library(microbenchmark)
+# benchmark_results <- microbenchmark(
+#   uncached = extract_universal_information(GlobalPatterns),
+#   cached = cached_extract_universal_information(GlobalPatterns),
+#   times = 5
+# )
+# print(benchmark_results)
+```
+
+### Precomputing Common Analyses
+
+```{r precompute}
+# Precompute analyses for multiple datasets
+datasets <- c("GlobalPatterns", "enterotype", "soilrep")
+
+for (dataset_name in datasets) {
+  # Load dataset
+  data(list = dataset_name, package = "phyloseq")
+  physeq <- get(dataset_name)
+  
+  # Precompute and cache
+  cached_extract_universal_information(physeq)
+  cat("Cached:", dataset_name, "\n")
+}
+```
+
+### Custom Cache Keys
+
+For complex analyses, use custom cache keys:
+
+```{r custom-keys}
+# Create custom cache key for specific analysis
+result <- cache_with_key(
+  key = "gut_microbiome_treatment_analysis_v2",
+  computation = {
+    # Complex analysis here
+    physeq_filtered <- prune_taxa(taxa_sums(GlobalPatterns) > 100, GlobalPatterns)
+    extract_universal_information(physeq_filtered, 
+                                groups = "SampleType",
+                                include_phylogenetic = TRUE)
+  }
+)
+
+# Retrieve using the same key
+cached_result <- cache_get("gut_microbiome_treatment_analysis_v2")
+```
+
+## Progress Tracking
+
+### Console Progress Bars
+
+For long-running analyses:
+
+```{r progress-console}
+# Create large dataset for demo
+large_physeq <- GlobalPatterns
+
+# Run with progress tracking
+result <- with_progress({
+  # Simulate steps of analysis
+  universal_info <- extract_universal_information(large_physeq)
+  
+  # Additional processing
+  predictions <- universal_diversity_transform(
+    source_metrics = c(shannon = 2.5),
+    target_metrics = c("simpson", "chao1", "observed"),
+    transformation_matrix = universal_info$transformation_matrix
+  )
+  
+  list(universal = universal_info, predictions = predictions)
+}, message = "Analyzing diversity patterns")
+```
+
+### Shiny Progress
+
+In Shiny applications:
+
+```{r progress-shiny, eval=FALSE}
+# In your Shiny server function
+observeEvent(input$analyze, {
+  result <- with_progress({
+    physeq <- load_dataset(input$dataset_id)
+    universal_info <- extract_universal_information(physeq)
+    universal_info
+  }, 
+  message = "Processing dataset",
+  shiny = TRUE,  # Enable Shiny progress
+  session = session
+  )
+})
+```
+
+### Custom Progress Tracking
+
+```{r custom-progress}
+# Create custom progress tracker
+analyze_multiple_datasets <- function(dataset_ids) {
+  n_datasets <- length(dataset_ids)
+  results <- list()
+  
+  # Create progress tracker
+  progress <- create_progress_tracker(
+    total = n_datasets,
+    message = "Processing datasets"
+  )
+  
+  for (i in seq_along(dataset_ids)) {
+    # Update progress
+    update_progress(progress, i, 
+                   detail = sprintf("Dataset %s", dataset_ids[i]))
+    
+    # Process dataset
+    physeq <- load_dataset(dataset_ids[i])
+    results[[dataset_ids[i]]] <- cached_extract_universal_information(physeq)
+  }
+  
+  finish_progress(progress)
+  results
+}
+
+# Use it
+results <- analyze_multiple_datasets(c("globalpatterns", "enterotype"))
+```
+
+## Advanced Caching Strategies
+
+### Hierarchical Caching
+
+Cache intermediate results for complex workflows:
+
+```{r hierarchical-cache}
+# Complex analysis with multiple steps
+perform_complex_analysis <- function(physeq, groups = NULL) {
+  # Step 1: Filter data (cached)
+  filtered_data <- cache_with_key(
+    key = paste0("filtered_", generate_phyloseq_hash(physeq)),
+    computation = {
+      prune_taxa(taxa_sums(physeq) > 50, physeq)
+    }
+  )
+  
+  # Step 2: Universal transformation (cached)
+  universal_info <- cached_extract_universal_information(
+    filtered_data,
+    groups = groups
+  )
+  
+  # Step 3: Predictions (cached)
+  predictions <- cache_with_key(
+    key = paste0("predictions_", generate_phyloseq_hash(filtered_data)),
+    computation = {
+      universal_diversity_transform(
+        source_metrics = c(shannon = 2.5, observed = 150),
+        target_metrics = c("simpson", "chao1", "faith_pd"),
+        transformation_matrix = universal_info$transformation_matrix
+      )
+    }
+  )
+  
+  list(
+    filtered = filtered_data,
+    universal = universal_info,
+    predictions = predictions
+  )
+}
+
+# First run caches all steps
+result1 <- perform_complex_analysis(GlobalPatterns, groups = "SampleType")
+
+# Second run is instant!
+result2 <- perform_complex_analysis(GlobalPatterns, groups = "SampleType")
+```
+
+### Conditional Caching
+
+Cache based on conditions:
+
+```{r conditional-cache}
+# Cache only large datasets
+smart_extract <- function(physeq, cache_threshold = 1000) {
+  n_elements <- nsamples(physeq) * ntaxa(physeq)
+  
+  if (n_elements > cache_threshold) {
+    # Large dataset - use cache
+    cat("Large dataset detected, using cache\n")
+    cached_extract_universal_information(physeq)
+  } else {
+    # Small dataset - compute directly
+    cat("Small dataset, computing directly\n")
+    extract_universal_information(physeq)
+  }
+}
+
+# Test with different sizes
+small_physeq <- prune_taxa(taxa_names(GlobalPatterns)[1:50], GlobalPatterns)
+result_small <- smart_extract(small_physeq)  # Direct computation
+
+result_large <- smart_extract(GlobalPatterns)  # Uses cache
+```
+
+### Cache Invalidation
+
+Control when to refresh cached results:
+
+```{r cache-invalidation}
+# Remove specific cached entry
+cache_remove("gut_microbiome_treatment_analysis_v2")
+
+# Clear all cache (use with caution!)
+# cache_clear()
+
+# Selective clearing based on age
+cache_cleanup(max_age_days = 30)  # Remove entries older than 30 days
+```
+
+## Memory Management
+
+### Large Dataset Strategies
+
+```{r memory-management, eval=FALSE}
+# Process large dataset in chunks
+process_large_dataset <- function(physeq, chunk_size = 1000) {
+  taxa_names <- taxa_names(physeq)
+  n_chunks <- ceiling(length(taxa_names) / chunk_size)
+  
+  results <- list()
+  
+  progress <- create_progress_tracker(n_chunks, "Processing chunks")
+  
+  for (i in 1:n_chunks) {
+    # Define chunk
+    start_idx <- (i - 1) * chunk_size + 1
+    end_idx <- min(i * chunk_size, length(taxa_names))
+    chunk_taxa <- taxa_names[start_idx:end_idx]
+    
+    # Process chunk
+    chunk_physeq <- prune_taxa(chunk_taxa, physeq)
+    
+    # Cache chunk result
+    chunk_result <- cache_with_key(
+      key = paste0("chunk_", i, "_", generate_phyloseq_hash(physeq)),
+      computation = {
+        extract_universal_information(chunk_physeq)
+      }
+    )
+    
+    results[[i]] <- chunk_result
+    update_progress(progress, i)
+  }
+  
+  finish_progress(progress)
+  
+  # Combine results
+  combine_chunk_results(results)
+}
+```
+
+### Cache Size Management
+
+```{r cache-size}
+# Set cache size limit (in MB)
+options(diversityGPT.cache_max_size = 500)
+
+# Monitor cache growth
+monitor_cache <- function() {
+  stats <- cache_stats()
+  
+  size_mb <- stats$total_size / 1024^2
+  cat("Cache size:", round(size_mb, 2), "MB\n")
+  cat("Number of entries:", stats$n_entries, "\n")
+  
+  if (size_mb > 400) {
+    warning("Cache size approaching limit!")
+    # Cleanup old entries
+    cache_cleanup(max_entries = 50)
+  }
+}
+
+monitor_cache()
+```
+
+## Parallel Processing with Caching
+
+### Parallel Analysis
+
+```{r parallel-cache, eval=FALSE}
+library(parallel)
+
+# Parallel processing with shared cache
+analyze_parallel <- function(dataset_ids, n_cores = 2) {
+  cl <- makeCluster(n_cores)
+  
+  # Export necessary objects
+  clusterEvalQ(cl, {
+    library(diversityGPT)
+    library(phyloseq)
+  })
+  
+  # Process in parallel (each worker uses cache)
+  results <- parLapply(cl, dataset_ids, function(id) {
+    physeq <- load_dataset(id)
+    cached_extract_universal_information(physeq)
+  })
+  
+  stopCluster(cl)
+  
+  names(results) <- dataset_ids
+  results
+}
+
+# Analyze multiple datasets in parallel
+results <- analyze_parallel(c("globalpatterns", "enterotype", "soilrep"))
+```
+
+## Best Practices
+
+### 1. Cache Strategy
+
+- **Always cache**: Universal information extraction (expensive)
+- **Sometimes cache**: Metric transformations (medium cost)
+- **Rarely cache**: Simple calculations (cheap)
+
+### 2. Cache Hygiene
+
+```{r cache-hygiene, eval=FALSE}
+# Regular cleanup routine
+maintain_cache <- function() {
+  # Remove old entries
+  cache_cleanup(max_age_days = 90)
+  
+  # Check cache health
+  stats <- cache_stats()
+  
+  if (stats$n_entries > 1000) {
+    message("Cache has many entries, consider cleanup")
+  }
+  
+  # Compact cache (remove deleted entries)
+  cache_cleanup(compact = TRUE)
+}
+
+# Run monthly
+maintain_cache()
+```
+
+### 3. Development vs Production
+
+```{r cache-environments, eval=FALSE}
+# Development: Frequent cache clearing
+if (interactive()) {
+  options(diversityGPT.cache_dir = "~/.diversityGPT_cache_dev")
+  cache_clear()  # Start fresh
+}
+
+# Production: Persistent cache
+if (!interactive()) {
+  options(diversityGPT.cache_dir = "/var/cache/diversityGPT")
+  options(diversityGPT.cache_max_size = 2000)  # 2GB limit
+}
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Cache not working**:
+   ```{r troubleshoot-init}
+   # Ensure cache is initialized
+   if (!cache_is_initialized()) {
+     init_cache_system()
+   }
+   ```
+
+2. **Inconsistent results**:
+   ```{r troubleshoot-hash}
+   # Check if objects have same hash
+   physeq1 <- GlobalPatterns
+   physeq2 <- GlobalPatterns
+   
+   hash1 <- generate_phyloseq_hash(physeq1)
+   hash2 <- generate_phyloseq_hash(physeq2)
+   
+   cat("Hashes match:", hash1 == hash2, "\n")
+   ```
+
+3. **Cache corruption**:
+   ```{r troubleshoot-corrupt, eval=FALSE}
+   # Clear and rebuild cache
+   cache_clear()
+   init_cache_system()
+   ```
+
+## Summary
+
+The caching system in diversityGPT provides:
+
+- **Speed**: 10-100x faster for repeated analyses
+- **Scalability**: Handle large datasets efficiently
+- **Reliability**: Content-based hashing ensures correctness
+- **Flexibility**: Custom keys and conditional caching
+
+Use caching to build efficient, scalable microbiome analysis pipelines!

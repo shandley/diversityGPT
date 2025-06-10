@@ -4,7 +4,6 @@
 #'
 #' @name format_converters
 #' @import phyloseq
-#' @import biomformat
 #' @importFrom jsonlite fromJSON
 NULL
 

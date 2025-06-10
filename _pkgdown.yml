@@ -1,0 +1,254 @@
+url: https://shandley.github.io/diversityGPT/
+
+template:
+  bootstrap: 5
+  bootswatch: cosmo
+  theme: arrow-light
+  
+  includes:
+    in_header: |
+      <!-- Custom CSS for diversityGPT docs -->
+      <style>
+        .navbar-brand {
+          font-weight: bold;
+          font-size: 1.5rem;
+        }
+        
+        .page-header {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 3rem 0;
+          margin-bottom: 2rem;
+        }
+        
+        .page-header h1 {
+          color: white;
+          font-size: 3rem;
+          font-weight: bold;
+        }
+        
+        .function-reference h2 {
+          border-bottom: 2px solid #667eea;
+          padding-bottom: 0.5rem;
+          margin-top: 2rem;
+        }
+        
+        code {
+          background-color: #f8f9fa;
+          padding: 0.2rem 0.4rem;
+          border-radius: 3px;
+        }
+        
+        .contents h2 {
+          color: #667eea;
+        }
+        
+        .alert-revolutionary {
+          background-color: #f0e6ff;
+          border-left: 4px solid #764ba2;
+          padding: 1rem;
+          margin: 1rem 0;
+        }
+      </style>
+
+navbar:
+  structure:
+    left:  [intro, articles, reference, news]
+    right: [search, github, twitter]
+  
+  components:
+    home:
+      icon: fas fa-home fa-lg
+      href: index.html
+    
+    articles:
+      text: Vignettes
+      icon: fas fa-book
+      menu:
+      - text: "Getting Started"
+        href: articles/getting-started.html
+      - text: "-------"
+      - text: "Core Concepts"
+      - text: "Universal Metric Transformation"
+        href: articles/universal-transformation.html
+      - text: "Ecological Interpretation"
+        href: articles/ecological-interpretation.html
+      - text: "-------"
+      - text: "Interactive Analysis"
+      - text: "Shiny Applications"
+        href: articles/shiny-apps.html
+      - text: "-------"
+      - text: "Advanced Topics"
+      - text: "Dataset Management"
+        href: articles/dataset-management.html
+      - text: "Caching Guide"
+        href: articles/caching-guide.html
+    
+    reference:
+      text: Functions
+      icon: fas fa-file-code
+      href: reference/index.html
+    
+    news:
+      text: Changelog
+      icon: fas fa-newspaper
+      href: news/index.html
+    
+    github:
+      icon: fab fa-github fa-lg
+      href: https://github.com/shandley/diversityGPT
+    
+    twitter:
+      icon: fab fa-twitter fa-lg
+      href: https://twitter.com/diversitygpt
+
+home:
+  title: "diversityGPT: Universal Diversity Metric Transformation for Microbiome Analysis"
+  description: >
+    Revolutionary R package that solves the critical "decision confusion" problem 
+    in microbiome diversity analysis by revealing that ALL diversity metrics are 
+    mathematically related through information theory.
+  
+  links:
+  - text: View on GitHub
+    href: https://github.com/shandley/diversityGPT
+    icon: fab fa-github
+  - text: Report a bug
+    href: https://github.com/shandley/diversityGPT/issues
+    icon: fas fa-bug
+  
+  sidebar:
+    structure: [custom, toc, dev]
+    
+    custom:
+      title: "🚀 Key Features"
+      text: |
+        <div class="alert alert-revolutionary">
+        <h4>World's First Universal Transformation System!</h4>
+        <ul>
+        <li>Convert between ANY diversity metrics</li>
+        <li>R² > 0.9 prediction accuracy</li>
+        <li>AI-powered ecological interpretation</li>
+        <li>Resolve conflicting metrics</li>
+        </ul>
+        </div>
+
+reference:
+- title: "🔬 Universal Transformation Framework"
+  desc: "Core functions for the revolutionary metric transformation system"
+  contents:
+  - extract_universal_information
+  - universal_diversity_transform
+  - predict_missing_diversity_metrics
+  - discover_metric_relationships
+  
+- title: "📊 Diversity Analysis"
+  desc: "Calculate and analyze diversity metrics"
+  contents:
+  - calculate_diversity
+  - consensus_diversity
+  - diversity_suite
+  
+- title: "🧠 AI & Interpretation"
+  desc: "Ecological interpretation and hypothesis generation"
+  contents:
+  - interpret_diversity
+  - detect_assembly_mechanisms
+  - generate_ecological_hypotheses
+  - starts_with("interpret_")
+  
+- title: "📈 Visualization"
+  desc: "Create publication-ready plots and interactive visualizations"
+  contents:
+  - plot_diversity_network
+  - plot_information_components
+  - plot_transformation_quality
+  - plot_transformation_results
+  - starts_with("plot_")
+  
+- title: "🚀 Shiny Applications"
+  desc: "Launch interactive web applications"
+  contents:
+  - launch_diversity_explorer
+  - launch_component_explorer
+  - launch_enhanced_explorer
+  - launch_simple_explorer
+  - explore_example
+
+- title: "📁 Data Management"
+  desc: "Load and manage microbiome datasets"
+  contents:
+  - list_available_datasets
+  - load_dataset
+  - get_dataset_info
+  - search_datasets
+  - starts_with("load_")
+  - starts_with("convert_")
+  
+- title: "⚡ Performance & Caching"
+  desc: "Optimize performance for large datasets"
+  contents:
+  - starts_with("cached_")
+  - starts_with("cache_")
+  - starts_with("parallel_")
+  - starts_with("optimized_")
+  - starts_with("memory_")
+  
+- title: "🛠️ Utilities"
+  desc: "Helper functions and utilities"
+  contents:
+  - create_progress_tracker
+  - update_progress
+  - finish_progress
+  - with_progress
+  - check_api_setup
+  - debug_api
+
+articles:
+- title: "Getting Started"
+  navbar: ~
+  contents:
+  - getting-started
+  
+- title: "Core Concepts"
+  desc: "Understanding the universal transformation framework"
+  navbar: ~
+  contents:
+  - universal-transformation
+  - ecological-interpretation
+  
+- title: "Interactive Analysis"
+  desc: "Web-based tools for exploration"
+  navbar: ~
+  contents:
+  - shiny-apps
+  
+- title: "Advanced Topics"
+  desc: "Dataset management and optimization"
+  navbar: ~
+  contents:
+  - dataset-management
+  - caching-guide
+
+news:
+  releases:
+  - text: "Version 0.2.0"
+    href: https://github.com/shandley/diversityGPT/releases/tag/v0.2.0
+  - text: "Version 0.1.0"
+    href: https://github.com/shandley/diversityGPT/releases/tag/v0.1.0
+
+authors:
+  Scott Handley:
+    href: https://handleylab.com
+  
+development:
+  mode: auto
+  
+figures:
+  dev: ragg::agg_png
+  dpi: 96
+  dev.args: []
+  fig.ext: png
+  fig.width: 7.2
+  fig.height: 5.4
+  fig.retina: 2

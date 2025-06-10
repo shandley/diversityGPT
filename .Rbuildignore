@@ -15,3 +15,7 @@
 ^llm_ecological_interpretation_framework\.md$
 ^diversitygpt_package_design\.md$
 ^CLAUDE\.md$
+^CONTRIBUTING\.md$
+^DATASET_EXPANSION_PLAN\.md$
+^PHASE_3_FORMAT_CONVERTERS\.md$
+^PHASE_4_CACHING_SYSTEM\.md$

@@ -1,0 +1,439 @@
+---
+title: "Dataset Management and Format Conversion"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Dataset Management and Format Conversion}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+## Overview
+
+diversityGPT provides a comprehensive dataset management system that handles:
+
+- **30+ Built-in Datasets**: Curated collection with metadata
+- **Format Converters**: BIOM, QIIME2, MetaPhlAn, and more
+- **Precomputed Analyses**: Instant access to universal transformations
+- **Smart Caching**: Automatic storage of processed results
+
+```{r setup}
+library(diversityGPT)
+library(phyloseq)
+library(DT)
+```
+
+## Dataset Discovery
+
+### Browsing Available Datasets
+
+```{r list-datasets}
+# List all available datasets
+all_datasets <- list_available_datasets()
+
+# View first few entries
+head(all_datasets[, c("name", "type", "samples", "taxa", "source")])
+```
+
+### Filtering Datasets
+
+Find datasets that match your criteria:
+
+```{r filter-datasets}
+# Find 16S datasets with more than 100 samples
+large_16s <- list_available_datasets(type = "16S")
+large_16s <- large_16s[!is.na(large_16s$samples) & large_16s$samples > 100, ]
+
+if (nrow(large_16s) > 0) {
+  print(large_16s[, c("name", "samples", "description")])
+} else {
+  cat("No 16S datasets with >100 samples found\n")
+}
+```
+
+### Searching by Keywords
+
+```{r search-datasets}
+# Search for gut-related datasets
+gut_datasets <- search_datasets("gut")
+print(gut_datasets[, c("name", "type", "description")])
+
+# Search for time series data
+time_series <- search_datasets("time")
+print(time_series[, c("name", "description")])
+```
+
+## Loading Datasets
+
+### Quick Load
+
+The simplest way to load a dataset:
+
+```{r quick-load}
+# Load by ID
+physeq <- load_dataset("enterotype")
+print(physeq)
+```
+
+### Load with Metadata
+
+Get detailed information before loading:
+
+```{r load-with-info}
+# Get dataset information
+info <- get_dataset_info("globalpatterns")
+
+# Examine metadata
+cat("Dataset:", info$name, "\n")
+cat("Samples:", info$samples, "\n")
+cat("Taxa:", info$taxa, "\n")
+cat("Citation:", info$citation, "\n")
+
+# Load if it matches your needs
+if (info$has_tree) {
+  gp_data <- load_dataset("globalpatterns")
+}
+```
+
+### Precomputed Datasets
+
+Load datasets with pre-calculated universal transformations:
+
+```{r precomputed}
+# List precomputed datasets
+precomputed <- list_available_datasets(source = "precomputed")
+print(precomputed[, c("name", "samples", "taxa")])
+
+# Load with precomputed results
+result <- load_dataset("globalpatterns_demo", return_universal = TRUE)
+
+# If return_universal = TRUE, you get both phyloseq and universal info
+if (is.list(result) && "universal_info" %in% names(result)) {
+  physeq <- result$phyloseq
+  universal_info <- result$universal_info
+  
+  cat("Precomputed R²:", universal_info$deconvolution_quality$mean_r_squared, "\n")
+}
+```
+
+## Format Conversion
+
+### Automatic Format Detection
+
+```{r auto-detect, eval=FALSE}
+# Automatically detect and convert format
+physeq <- convert_to_phyloseq("my_data.biom")
+physeq <- convert_to_phyloseq("feature_table.qza")
+physeq <- convert_to_phyloseq("metaphlan_profile.txt")
+```
+
+### BIOM Format
+
+Convert BIOM files (from QIIME, mothur, etc.):
+
+```{r biom-convert, eval=FALSE}
+# Basic BIOM conversion
+physeq <- biom_to_phyloseq("otu_table.biom")
+
+# With sample metadata
+physeq <- biom_to_phyloseq(
+  biom_file = "otu_table.biom",
+  sample_metadata = "sample_data.txt",
+  tree_file = "tree.nwk"
+)
+
+# From QIIME2 exported BIOM
+physeq <- biom_to_phyloseq(
+  biom_file = "feature-table.biom",
+  taxonomy_file = "taxonomy.tsv",
+  tree_file = "tree.nwk",
+  metadata_file = "sample-metadata.tsv"
+)
+```
+
+### QIIME2 Artifacts
+
+Work directly with QIIME2 `.qza` files:
+
+```{r qiime2-convert, eval=FALSE}
+# Single artifact
+physeq <- qiime2_to_phyloseq("feature_table.qza")
+
+# Multiple artifacts
+physeq <- merge_qiime2_artifacts(
+  feature_table = "table.qza",
+  taxonomy = "taxonomy.qza",
+  tree = "rooted-tree.qza",
+  metadata = "metadata.tsv"
+)
+
+# With filtering
+physeq <- qiime2_to_phyloseq(
+  qza_file = "table.qza",
+  min_reads = 1000,      # Filter samples with < 1000 reads
+  min_prevalence = 0.05  # Filter taxa in < 5% of samples
+)
+```
+
+### MetaPhlAn Profiles
+
+Convert MetaPhlAn taxonomic profiles:
+
+```{r metaphlan-convert, eval=FALSE}
+# Single sample
+physeq <- metaphlan_to_phyloseq("sample1_profile.txt")
+
+# Multiple samples
+files <- list.files("metaphlan_output", pattern = "*_profile.txt", 
+                   full.names = TRUE)
+physeq <- metaphlan_to_phyloseq(
+  profile_files = files,
+  metadata_file = "sample_metadata.csv"
+)
+
+# With taxonomic level filtering
+physeq <- metaphlan_to_phyloseq(
+  profile_files = files,
+  tax_level = "species",  # Only keep species level
+  min_abundance = 0.01    # Filter < 1% abundance
+)
+```
+
+### Other Formats
+
+```{r other-formats, eval=FALSE}
+# Tab-delimited OTU table
+physeq <- convert_to_phyloseq(
+  "otu_table.tsv",
+  format = "tsv",
+  taxonomy_file = "taxonomy.tsv",
+  sample_data_file = "metadata.tsv"
+)
+
+# CSV format
+physeq <- convert_to_phyloseq(
+  "abundance_table.csv",
+  format = "csv",
+  taxa_are_rows = TRUE
+)
+
+# From data frames
+otu_df <- read.csv("otus.csv", row.names = 1)
+tax_df <- read.csv("taxonomy.csv", row.names = 1)
+physeq <- convert_to_phyloseq(
+  otu_table = otu_df,
+  taxonomy = tax_df,
+  format = "data.frame"
+)
+```
+
+## Interactive Dataset Browser
+
+### Using the Shiny Interface
+
+```{r shiny-browser, eval=FALSE}
+# Launch the interactive explorer
+launch_diversity_explorer()
+
+# The Dataset Browser tab provides:
+# - Visual cards for each dataset
+# - Filtering by type, source, environment
+# - Search functionality
+# - One-click loading
+# - Detailed metadata display
+```
+
+### Programmatic Access
+
+Replicate the browser functionality in code:
+
+```{r programmatic-browser}
+# Create a dataset catalog
+catalog <- list_available_datasets()
+
+# Add tags information
+for (i in 1:nrow(catalog)) {
+  info <- get_dataset_info(catalog$id[i])
+  catalog$tags[i] <- paste(info$tags, collapse = ", ")
+  catalog$has_tree[i] <- info$has_tree
+}
+
+# Create interactive table
+datatable(
+  catalog[, c("name", "type", "samples", "taxa", "has_tree", "source")],
+  options = list(pageLength = 5),
+  caption = "Available Datasets in diversityGPT"
+)
+```
+
+## Working with Your Own Data
+
+### Best Practices
+
+1. **Prepare Your Data**:
+   - OTU/ASV table (samples as columns, taxa as rows)
+   - Taxonomy table (optional but recommended)
+   - Sample metadata (optional but recommended)
+   - Phylogenetic tree (optional, enables P component)
+
+2. **File Formats**:
+   - Use standard formats (BIOM, QIIME2, TSV)
+   - Include headers in tabular files
+   - Use consistent sample IDs across files
+
+3. **Quality Control**:
+   ```{r qc-example, eval=FALSE}
+   # Check data after loading
+   physeq <- convert_to_phyloseq("my_data.biom")
+   
+   # Basic QC
+   cat("Samples:", nsamples(physeq), "\n")
+   cat("Taxa:", ntaxa(physeq), "\n")
+   cat("Sparsity:", sum(otu_table(physeq) == 0) / length(otu_table(physeq)), "\n")
+   
+   # Filter low-quality samples/taxa
+   physeq_filtered <- phyloseq::filter_taxa(physeq, function(x) sum(x > 0) > 5, TRUE)
+   physeq_filtered <- phyloseq::prune_samples(sample_sums(physeq_filtered) > 1000, 
+                                              physeq_filtered)
+   ```
+
+### Creating a Dataset Entry
+
+Add your dataset to the registry:
+
+```{r create-entry, eval=FALSE}
+# Create a dataset entry
+my_dataset <- list(
+  id = "my_study",
+  name = "My Microbiome Study",
+  type = "16S",
+  source = "custom",
+  samples = nsamples(physeq),
+  taxa = ntaxa(physeq),
+  has_tree = !is.null(phy_tree(physeq, errorIfNULL = FALSE)),
+  has_metadata = !is.null(sample_data(physeq, errorIfNULL = FALSE)),
+  description = "Time series of gut microbiome during treatment",
+  citation = "Your Name et al. (2025) Journal Name",
+  tags = c("gut", "time series", "treatment", "16S V4"),
+  file_path = "path/to/your/data.rds"
+)
+
+# Save phyloseq object
+saveRDS(physeq, "path/to/your/data.rds")
+```
+
+## Batch Processing
+
+### Processing Multiple Datasets
+
+```{r batch-process, eval=FALSE}
+# Get all gut datasets
+gut_datasets <- search_datasets("gut")
+
+# Process each dataset
+results <- list()
+for (i in 1:nrow(gut_datasets)) {
+  cat("Processing:", gut_datasets$name[i], "\n")
+  
+  # Load dataset
+  physeq <- load_dataset(gut_datasets$id[i])
+  
+  # Extract universal information
+  universal_info <- extract_universal_information(physeq)
+  
+  # Store results
+  results[[gut_datasets$id[i]]] <- list(
+    dataset = gut_datasets$name[i],
+    quality = universal_info$deconvolution_quality$mean_r_squared,
+    n_samples = nsamples(physeq),
+    components = universal_info$deconvolution_quality$components_present
+  )
+}
+
+# Summarize results
+summary_df <- do.call(rbind, lapply(results, as.data.frame))
+print(summary_df)
+```
+
+### Parallel Processing
+
+```{r parallel, eval=FALSE}
+# Use parallel processing for large datasets
+library(parallel)
+
+# Set up cluster
+cl <- makeCluster(detectCores() - 1)
+clusterEvalQ(cl, {
+  library(diversityGPT)
+  library(phyloseq)
+})
+
+# Process datasets in parallel
+dataset_ids <- c("dataset1", "dataset2", "dataset3")
+results <- parLapply(cl, dataset_ids, function(id) {
+  physeq <- load_dataset(id)
+  extract_universal_information(physeq)
+})
+
+stopCluster(cl)
+```
+
+## Format Conversion Tips
+
+### Handling Large Files
+
+```{r large-files, eval=FALSE}
+# For large BIOM files, use streaming
+physeq <- biom_to_phyloseq(
+  biom_file = "large_table.biom",
+  chunk_size = 10000  # Process in chunks
+)
+
+# For multiple QIIME2 artifacts, process sequentially
+artifacts <- list.files("qiime2_output", pattern = "*.qza")
+for (artifact in artifacts) {
+  # Process and save each
+  physeq <- qiime2_to_phyloseq(artifact)
+  saveRDS(physeq, sub(".qza", ".rds", artifact))
+}
+```
+
+### Troubleshooting Common Issues
+
+1. **Memory Issues**:
+   ```{r memory, eval=FALSE}
+   # Reduce data size before processing
+   physeq_small <- prune_taxa(taxa_sums(physeq) > 10, physeq)
+   ```
+
+2. **Format Detection Fails**:
+   ```{r format-fix, eval=FALSE}
+   # Explicitly specify format
+   physeq <- convert_to_phyloseq("ambiguous_file.txt", format = "tsv")
+   ```
+
+3. **Missing Metadata**:
+   ```{r metadata-fix, eval=FALSE}
+   # Add metadata after conversion
+   physeq <- biom_to_phyloseq("table.biom")
+   metadata <- read.csv("metadata.csv", row.names = 1)
+   sample_data(physeq) <- metadata
+   ```
+
+## Next Steps
+
+- See `vignette("caching-guide")` for performance optimization
+- Check the [Shiny app documentation](https://diversitygpt.github.io/shiny) for interactive analysis
+- Explore precomputed datasets for instant analysis
+
+The dataset management system in diversityGPT makes it easy to work with microbiome data from any source, ensuring you can focus on analysis rather than data wrangling.

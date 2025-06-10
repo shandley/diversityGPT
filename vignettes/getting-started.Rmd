@@ -1,0 +1,265 @@
+---
+title: "Getting Started with diversityGPT"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with diversityGPT}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+## Introduction
+
+Welcome to **diversityGPT** - the revolutionary R package that transforms how we analyze microbiome diversity. This vignette will guide you through the core concepts and basic usage of the package.
+
+### What Makes diversityGPT Different?
+
+Traditional diversity analysis treats each metric (Shannon, Simpson, Chao1, etc.) as an independent measurement. When different metrics disagree, researchers face "decision confusion" - which metric should they trust?
+
+**diversityGPT solves this by revealing that ALL diversity metrics are mathematically related through information theory.** Every metric can be decomposed into fundamental components:
+
+- **R (Richness)**: Information about species count
+- **E (Evenness)**: Information about distribution uniformity  
+- **P (Phylogenetic)**: Information about evolutionary relationships
+- **S (Spatial)**: Information about geographic patterns
+
+This universal framework enables:
+1. Converting between ANY diversity metrics
+2. Predicting missing metrics with high accuracy (R² > 0.9)
+3. Resolving conflicts when metrics disagree
+4. Standardizing metrics across different studies
+
+## Installation and Setup
+
+```{r setup, eval=FALSE}
+# Install from GitHub
+devtools::install_github("shandley/diversityGPT")
+
+# Load the package
+library(diversityGPT)
+library(phyloseq)
+```
+
+```{r load-quiet, echo=FALSE}
+library(diversityGPT)
+library(phyloseq)
+```
+
+### Optional: AI Integration
+
+For AI-powered ecological interpretation, add your API key to `.Renviron`:
+
+```bash
+ANTHROPIC_API_KEY=your-key-here
+# or
+OPENAI_API_KEY=your-key-here
+```
+
+## Basic Workflow
+
+Let's walk through a complete analysis using the GlobalPatterns dataset:
+
+### 1. Load Your Data
+
+```{r load-data}
+# Option 1: Use built-in phyloseq data
+data(GlobalPatterns)
+
+# Option 2: Load from our dataset collection
+# physeq <- load_dataset("enterotype")
+
+# Option 3: Convert from common formats
+# physeq <- convert_to_phyloseq("my_data.biom")
+
+# Quick look at the data
+print(GlobalPatterns)
+```
+
+### 2. Extract Universal Information Components
+
+This is the core innovation of diversityGPT - decomposing all diversity information into universal components:
+
+```{r extract-info}
+# Extract universal information
+universal_info <- extract_universal_information(
+  GlobalPatterns,
+  groups = "SampleType"  # Optional grouping variable
+)
+
+# View the results
+print(universal_info)
+```
+
+The output shows:
+- **Overall Quality**: How well the universal framework captures your data's diversity
+- **Mean R²**: Average accuracy of metric predictions
+- **Components Present**: Which information types are in your data
+
+### 3. Explore the Information Components
+
+Let's visualize how diversity information is distributed:
+
+```{r plot-components, fig.cap="Distribution of diversity information across R, E, P, S components"}
+# Plot information components
+plot_information_components(universal_info)
+```
+
+Each bar shows how much each sample's diversity comes from:
+- **Red (R)**: Species richness
+- **Blue (E)**: Evenness of distribution
+- **Green (P)**: Phylogenetic diversity (if tree present)
+- **Orange (S)**: Spatial patterns (if coordinates present)
+
+### 4. Transform Between Metrics
+
+Now for the magic - convert between ANY diversity metrics:
+
+```{r transform-metrics}
+# Say we have Shannon diversity but need Simpson and Chao1
+source_metrics <- c(shannon = 2.5)
+
+# Transform to other metrics
+predictions <- universal_diversity_transform(
+  source_metrics = source_metrics,
+  target_metrics = c("simpson", "chao1", "observed"),
+  transformation_matrix = universal_info$transformation_matrix
+)
+
+# View predictions
+print(predictions)
+```
+
+### 5. Visualize Metric Relationships
+
+See how all metrics relate to each other:
+
+```{r plot-network, fig.cap="Network showing relationships between diversity metrics"}
+# Create interactive network plot
+plot_diversity_network(universal_info, interactive = FALSE)
+```
+
+Thicker lines indicate stronger relationships between metrics.
+
+### 6. Predict Missing Metrics
+
+What if you need Faith's PD but don't have a phylogenetic tree? Or want Bray-Curtis but only have alpha diversity?
+
+```{r predict-missing}
+# Predict missing metrics from available ones
+available_metrics <- c(shannon = 2.3, observed = 150)
+
+missing_predictions <- predict_missing_diversity_metrics(
+  available_metrics = available_metrics,
+  phyloseq_reference = GlobalPatterns  # Uses this as reference
+)
+
+head(missing_predictions)
+```
+
+## Interactive Analysis
+
+For a more comprehensive analysis experience, launch the Shiny app:
+
+```{r shiny, eval=FALSE}
+# Launch the interactive explorer
+launch_diversity_explorer()
+
+# Or try the component explorer
+launch_component_explorer()
+```
+
+The interactive explorer provides:
+- Real-time metric transformation
+- Dataset browsing and loading
+- Interactive visualizations
+- AI-powered interpretation
+- Export capabilities
+
+## Common Use Cases
+
+### Use Case 1: Resolving Metric Conflicts
+
+When Shannon shows significant differences but Simpson doesn't:
+
+```{r conflict-resolution}
+# First calculate diversity metrics
+div_results <- calculate_diversity(GlobalPatterns)
+
+# Then calculate consensus across metrics
+consensus_result <- consensus_diversity(
+  div_results,
+  method = "information_weighted"
+)
+
+# The consensus considers all metrics weighted by their information content
+print(head(consensus_result$consensus_value))
+```
+
+### Use Case 2: Cross-Study Comparison
+
+Different studies used different metrics? Standardize them:
+
+```{r cross-study, eval=FALSE}
+# Study 1 used Shannon and Simpson
+study1_universal <- extract_universal_information(study1_data)
+
+# Study 2 used Chao1 and Faith's PD  
+study2_universal <- extract_universal_information(study2_data)
+
+# Now both are comparable through R, E, P, S components!
+```
+
+### Use Case 3: Ecological Interpretation
+
+Get AI-powered insights about your patterns:
+
+```{r ai-interpretation, eval=FALSE}
+# Get ecological interpretation
+interpretation <- interpret_diversity(
+  universal_info,
+  context = list(
+    environment = "human_gut",
+    condition = "antibiotic_treatment",
+    hypothesis = "We expect reduced diversity after antibiotics"
+  )
+)
+
+print(interpretation)
+```
+
+## Key Concepts Summary
+
+1. **Universal Information Framework**: All diversity metrics share common information components (R, E, P, S)
+
+2. **Transformation Matrix**: Mathematical relationships that enable metric conversion
+
+3. **Quality Metrics**: R² values tell you how reliable each transformation is
+
+4. **Consensus Methods**: Resolve conflicts by considering all metrics together
+
+5. **AI Integration**: Get ecological interpretation of mathematical patterns
+
+## Next Steps
+
+- Explore the `vignette("universal-transformation")` for mathematical details
+- See `vignette("dataset-management")` for data handling options  
+- Check `vignette("caching-guide")` for performance optimization
+- Try the interactive explorer with your own data!
+
+## Getting Help
+
+- **Documentation**: Type `?function_name` for any function
+- **GitHub Issues**: https://github.com/shandley/diversityGPT/issues
+- **Discussions**: https://github.com/shandley/diversityGPT/discussions
+
+Remember: diversityGPT doesn't replace your ecological knowledge - it enhances it by revealing hidden mathematical relationships in your data!
