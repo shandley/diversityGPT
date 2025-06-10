@@ -18,7 +18,7 @@
 - 🤝 **Consensus Algorithms**: Resolve metric conflicts with R² > 0.9 accuracy
 - 🧠 **AI-Powered Interpretation**: Dual LLM support for ecological insights and hypothesis generation
 
-### New in Version 0.3.0 (Phase 3 Complete!)
+### New in Version 1.0.0 (CRAN Release!)
 - 🔬 **Ecological Intelligence**: AI-powered assembly mechanism detection and hypothesis generation
   - `detect_assembly_mechanisms()`: Environmental filtering, competition, neutral processes
   - `generate_ecological_hypotheses()`: Multi-type hypothesis generation with experimental designs
@@ -35,10 +35,25 @@
 - 📈 **Advanced Visualizations**: Network plots, 3D surfaces, component dashboards
 - 📚 **Comprehensive Documentation**: 6 detailed vignettes + pkgdown website
 - 🚀 **Production Ready**: Complete ecosystem for microbiome diversity analysis and discovery
+- 🔌 **API Framework**: Unified programmatic interface with REST API and Python client
+- 📊 **Professional Reports**: Automated HTML/PDF generation with multiple templates
+- ✅ **Statistical Validation**: Bootstrap and cross-validation for all transformations
+- 🔄 **Meta-Analysis Tools**: Cross-study comparison with fixed/random effects models
 
 ## Installation
 
-You can install the development version of diversityGPT from [GitHub](https://github.com/shandley/diversityGPT):
+### CRAN (Coming Soon!)
+
+diversityGPT will be available on CRAN:
+
+``` r
+# Coming soon!
+install.packages("diversityGPT")
+```
+
+### Development Version
+
+You can install the development version from [GitHub](https://github.com/shandley/diversityGPT):
 
 ``` r
 # install.packages("devtools")
@@ -46,6 +61,16 @@ devtools::install_github("shandley/diversityGPT")
 
 # For full functionality, also install:
 install.packages(c("shiny", "shinydashboard", "plotly", "DT", "networkD3"))
+```
+
+### Dependencies
+
+diversityGPT depends on phyloseq from Bioconductor:
+
+``` r
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("phyloseq")
 ```
 
 ## Quick Start

@@ -1,12 +1,18 @@
 Package: diversityGPT
-Title: Universal Diversity Metric Transformation for Microbiome Analysis
-Version: 0.2.0
-Authors@R: 
-    person("Scott", "Handley", , "scott.handley@example.com", role = c("aut", "cre"))
-Description: Solves the critical decision confusion problem in microbiome diversity 
-    analysis by providing intelligent synthesis of multiple diversity metrics. When 
-    different metrics give conflicting results, diversityGPT uses consensus algorithms 
-    and AI-powered interpretation to provide clear, actionable insights.
+Title: Universal Diversity Analysis with AI-Powered Ecological Intelligence
+Version: 1.0.0
+Authors@R: c(
+    person("Scott", "Handley", , "scott.handley@wustl.edu", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0000-0000-0000")))
+Description: Transforms microbiome diversity analysis through a revolutionary mathematical
+    framework for universal metric transformation. Implements information theory-based
+    deconvolution to convert between any diversity metrics (Shannon, Simpson, Chao1,
+    Faith's PD, UniFrac, etc.) by decomposing them into fundamental components:
+    Richness (R), Evenness (E), Phylogenetic (P), and Spatial (S). Features include
+    AI-powered ecological interpretation, assembly mechanism detection, hypothesis
+    generation, and interactive visualizations. Enables standardized cross-study
+    comparisons and meta-analyses through metric harmonization. Integrates with
+    'phyloseq' for seamless microbiome workflow integration.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -21,7 +27,9 @@ Imports:
     rlang,
     digest,
     utils,
-    methods
+    methods,
+    graphics,
+    grDevices
 Suggests: 
     ggplot2,
     plotly,
@@ -38,7 +46,14 @@ Suggests:
     reshape2,
     dplyr,
     microbenchmark,
-    parallel
+    parallel,
+    plumber,
+    base64enc,
+    callr,
+    igraph,
+    ape,
+    picante,
+    Matrix
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Depends: 

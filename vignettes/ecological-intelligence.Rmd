@@ -1,0 +1,359 @@
+---
+title: "AI-Powered Ecological Intelligence"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{AI-Powered Ecological Intelligence}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  eval = FALSE  # Set to FALSE since LLM features require API keys
+)
+```
+
+```{r setup}
+library(diversityGPT)
+library(phyloseq)
+```
+
+## Introduction
+
+diversityGPT integrates cutting-edge AI technology to provide ecological interpretation of diversity patterns. This vignette demonstrates how to leverage Large Language Models (LLMs) for:
+
+- Assembly mechanism detection
+- Hypothesis generation
+- Literature synthesis
+- Real-time ecological commentary
+
+## Setting Up AI Integration
+
+### Configure LLM Provider
+
+diversityGPT supports multiple LLM providers:
+
+```{r llm-setup}
+# Option 1: Anthropic Claude (recommended)
+configure_llm(
+  provider = "anthropic",
+  api_key = Sys.getenv("ANTHROPIC_API_KEY"),
+  model = "claude-3-opus-20240229"
+)
+
+# Option 2: OpenAI GPT
+configure_llm(
+  provider = "openai", 
+  api_key = Sys.getenv("OPENAI_API_KEY"),
+  model = "gpt-4"
+)
+
+# Option 3: No LLM (statistical methods only)
+configure_llm(provider = "none")
+```
+
+### Environment Variables
+
+For security, store API keys in environment variables:
+
+```bash
+# In .Renviron file
+ANTHROPIC_API_KEY=your-key-here
+OPENAI_API_KEY=your-key-here
+```
+
+## Assembly Mechanism Detection
+
+Identify ecological processes shaping your community:
+
+```{r assembly-mechanisms}
+# Load and analyze data
+data(GlobalPatterns)
+universal_info <- extract_universal_information(GlobalPatterns)
+
+# Detect assembly mechanisms
+mechanisms <- detect_assembly_mechanisms(
+  universal_info,
+  environmental_data = sample_data(GlobalPatterns)
+)
+
+# View detected mechanisms
+print(mechanisms$primary_mechanism)
+print(mechanisms$confidence_scores)
+
+# Get detailed explanation
+explain_mechanisms(mechanisms)
+```
+
+### Understanding Assembly Mechanisms
+
+1. **Environmental Filtering**: Environmental conditions select for specific traits
+2. **Competitive Exclusion**: Species compete for limited resources
+3. **Neutral Drift**: Random demographic processes dominate
+4. **Dispersal Limitation**: Geographic barriers limit species movement
+
+## Hypothesis Generation
+
+Generate testable hypotheses from diversity patterns:
+
+```{r hypothesis-generation}
+# Generate ecological hypotheses
+hypotheses <- generate_ecological_hypotheses(
+  universal_info = universal_info,
+  assembly_mechanisms = mechanisms,
+  study_context = list(
+    environment = "human_gut",
+    condition = "antibiotic_treatment",
+    timepoint = "longitudinal"
+  )
+)
+
+# View generated hypotheses
+for (i in seq_along(hypotheses$hypotheses)) {
+  cat("\nHypothesis", i, ":\n")
+  cat(hypotheses$hypotheses[[i]]$statement, "\n")
+  cat("Confidence:", hypotheses$hypotheses[[i]]$confidence, "\n")
+  cat("Testable prediction:", hypotheses$hypotheses[[i]]$prediction, "\n")
+}
+```
+
+### Multi-Step Reasoning
+
+The AI uses chain-of-thought reasoning to generate hypotheses:
+
+```{r reasoning-chain}
+# View reasoning process
+reasoning <- hypotheses$reasoning_chain
+for (step in reasoning) {
+  cat("\nStep:", step$step, "\n")
+  cat("Thought:", step$thought, "\n")
+  cat("Evidence:", step$evidence, "\n")
+}
+```
+
+## Literature Integration
+
+Connect your findings with scientific literature:
+
+```{r literature-search}
+# Search relevant literature
+literature <- search_literature(
+  universal_info = universal_info,
+  assembly_mechanisms = mechanisms,
+  hypotheses = hypotheses,
+  databases = c("biorxiv", "pubmed", "semantic_scholar"),
+  max_papers = 20
+)
+
+# View top relevant papers
+head(literature$papers)
+
+# Get synthesis of literature findings
+synthesis <- literature$synthesis
+cat("Literature Synthesis:\n", synthesis$summary)
+```
+
+### Custom Literature Queries
+
+```{r custom-query}
+# Search with custom query
+custom_lit <- search_literature(
+  custom_query = "gut microbiome diversity antibiotic resistance",
+  databases = c("biorxiv"),
+  max_papers = 10,
+  llm_synthesis = TRUE
+)
+
+print(custom_lit$synthesis)
+```
+
+## Real-Time Ecological Commentary
+
+Get instant interpretation of diversity patterns:
+
+```{r real-time-commentary}
+# Analyze specific pattern
+pattern_data <- list(
+  richness_trend = "decreasing",
+  evenness_trend = "increasing", 
+  phylogenetic_diversity = "stable",
+  samples = c("Day1", "Day7", "Day14", "Day30")
+)
+
+commentary <- provide_ecological_commentary(
+  pattern = pattern_data,
+  context = "antibiotic treatment time series"
+)
+
+cat(commentary$interpretation)
+```
+
+## Advanced AI Features
+
+### Comparative Analysis
+
+```{r comparative-analysis}
+# Compare two conditions with AI interpretation
+groups <- sample_data(GlobalPatterns)$SampleType
+group_results <- diversity_suite_with_ecology(
+  GlobalPatterns,
+  groups = groups,
+  llm_assist = TRUE
+)
+
+# Get comparative insights
+comparison <- compare_groups_with_ai(
+  group_results,
+  group1 = "Soil",
+  group2 = "Ocean"
+)
+
+print(comparison$key_differences)
+print(comparison$ecological_implications)
+```
+
+### Predictive Insights
+
+```{r predictive}
+# Predict ecological outcomes
+predictions <- predict_ecological_outcomes(
+  universal_info = universal_info,
+  mechanisms = mechanisms,
+  scenario = "increased_temperature",
+  confidence_level = 0.95
+)
+
+# View predictions
+for (pred in predictions$outcomes) {
+  cat("\nOutcome:", pred$description, "\n")
+  cat("Probability:", pred$probability, "\n")
+  cat("Time frame:", pred$timeframe, "\n")
+}
+```
+
+## Customizing AI Behavior
+
+### Prompt Engineering
+
+```{r custom-prompts}
+# Use custom prompts for domain-specific analysis
+custom_interpretation <- interpret_diversity(
+  results = universal_info,
+  custom_prompt = "Focus on antimicrobial resistance genes and their 
+                   relationship to diversity patterns. Consider horizontal
+                   gene transfer and selective pressures.",
+  expertise_level = "expert"
+)
+```
+
+### Controlling Output Style
+
+```{r output-style}
+# Configure output style
+ai_config <- create_ai_config(
+  style = "technical",  # or "educational", "concise"
+  include_references = TRUE,
+  confidence_threshold = 0.8,
+  max_hypotheses = 5
+)
+
+results_styled <- generate_ecological_hypotheses(
+  universal_info,
+  config = ai_config
+)
+```
+
+## Validation and Quality Control
+
+### AI Confidence Scoring
+
+```{r confidence-scoring}
+# Check AI confidence in interpretations
+interpretation <- interpret_diversity(universal_info)
+
+# View confidence breakdown
+conf_report <- interpretation$confidence_report
+print(conf_report$overall_confidence)
+print(conf_report$component_confidence)
+print(conf_report$limitations)
+```
+
+### Human-in-the-Loop Validation
+
+```{r human-validation}
+# Flag interpretations for human review
+flagged <- flag_for_review(
+  interpretation,
+  criteria = list(
+    confidence_below = 0.7,
+    contradictory_patterns = TRUE,
+    novel_findings = TRUE
+  )
+)
+
+# Export for expert review
+export_for_review(flagged, file = "ai_interpretations_review.html")
+```
+
+## Best Practices
+
+1. **Always Validate**: AI interpretations should be validated against domain knowledge
+2. **Provide Context**: More context leads to better interpretations
+3. **Check Confidence**: Low confidence scores indicate uncertainty
+4. **Iterative Refinement**: Use human feedback to improve AI performance
+5. **Cost Management**: LLM API calls can be expensive - use caching
+
+## Troubleshooting
+
+### Common Issues
+
+```{r troubleshooting}
+# Check LLM configuration
+check_llm_config()
+
+# Test API connection
+test_llm_connection()
+
+# View API usage
+get_api_usage_stats()
+```
+
+### Offline Fallback
+
+When LLM is unavailable, statistical methods are used:
+
+```{r offline-mode}
+# Force offline mode
+mechanisms_offline <- detect_assembly_mechanisms(
+  universal_info,
+  use_llm = FALSE
+)
+
+# Compare with LLM results
+compare_methods(mechanisms, mechanisms_offline)
+```
+
+## Future Directions
+
+The AI-powered features in diversityGPT continue to evolve:
+
+- Fine-tuned models for microbiome-specific interpretations
+- Integration with more literature databases
+- Real-time learning from user feedback
+- Multi-modal analysis (diversity + metabolomics + metagenomics)
+
+## References
+
+1. LLMs for Biological Interpretation (2024)
+2. Assembly Mechanisms in Microbial Communities (2023)
+3. AI-Assisted Hypothesis Generation in Ecology (2024)
+
+## Session Info
+
+```{r session-info}
+sessionInfo()
+```

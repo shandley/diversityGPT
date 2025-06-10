@@ -1,0 +1,243 @@
+---
+title: "Introduction to diversityGPT"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to diversityGPT}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  eval = TRUE
+)
+```
+
+```{r setup}
+library(diversityGPT)
+library(phyloseq)
+```
+
+## Overview
+
+diversityGPT revolutionizes microbiome diversity analysis by solving the "metric confusion problem" - when different diversity metrics give conflicting results. The package provides:
+
+1. **Universal Metric Transformation**: Convert between ANY diversity metrics
+2. **AI-Powered Interpretation**: Understand ecological meaning of patterns
+3. **Consensus Analysis**: Resolve conflicts between metrics
+4. **Interactive Exploration**: Visualize and explore diversity patterns
+
+## Quick Start
+
+### Basic Analysis
+
+```{r basic-analysis}
+# Load example microbiome data
+data(GlobalPatterns)
+
+# Run comprehensive diversity analysis
+results <- diversity_suite(
+  phyloseq_obj = GlobalPatterns,
+  metrics = c("shannon", "simpson", "chao1", "faith_pd"),
+  consensus_method = "adaptive"
+)
+
+# View results
+print(results)
+```
+
+### Visualize Diversity Patterns
+
+```{r visualize}
+# Plot diversity metrics
+plot(results, type = "metrics")
+
+# Show consensus vs individual metrics
+plot(results, type = "consensus")
+```
+
+## Universal Information Framework
+
+The core innovation of diversityGPT is the ability to decompose any diversity metric into fundamental components:
+
+```{r universal-info}
+# Extract universal information
+universal_info <- extract_universal_information(GlobalPatterns)
+
+# View information components
+head(universal_info$information_components)
+
+# Visualize component breakdown
+plot(universal_info, type = "components")
+```
+
+## Metric Transformation
+
+Transform between any diversity metrics:
+
+```{r transformation}
+# Example: You have Shannon, want Simpson and Chao1
+source_metrics <- data.frame(
+  shannon = c(2.1, 2.5, 1.8, 2.3),
+  row.names = paste0("Sample", 1:4)
+)
+
+# Transform to other metrics
+transformed <- universal_diversity_transform(
+  source_metrics = source_metrics,
+  target_metrics = c("simpson", "chao1"),
+  transformation_matrix = universal_info$transformation_matrix
+)
+
+print(transformed)
+```
+
+## AI-Powered Interpretation
+
+Get ecological insights from your diversity patterns:
+
+```{r ai-interpretation, eval=FALSE}
+# Configure LLM (requires API key)
+configure_llm(
+  provider = "anthropic",
+  api_key = "your-api-key"
+)
+
+# Get AI interpretation
+interpretation <- interpret_diversity(
+  results,
+  context = list(
+    environment = "human_gut",
+    condition = "healthy_vs_disease"
+  )
+)
+
+print(interpretation$summary)
+print(interpretation$hypotheses)
+```
+
+## Consensus Analysis
+
+When metrics disagree, use consensus algorithms:
+
+```{r consensus}
+# Run consensus analysis
+consensus <- consensus_diversity(
+  phyloseq_obj = GlobalPatterns,
+  metrics = c("shannon", "simpson", "observed"),
+  method = "information_theoretic"
+)
+
+# Plot confidence intervals
+plot(consensus, type = "bootstrap")
+```
+
+## Interactive Exploration
+
+Launch the interactive Shiny application:
+
+```{r shiny, eval=FALSE}
+# Launch interactive explorer
+launch_diversity_explorer()
+```
+
+The Shiny app provides:
+- Real-time metric transformation
+- Interactive visualizations
+- AI-powered insights
+- Data upload and export
+
+## Working with Your Data
+
+### From phyloseq
+
+```{r your-data-phyloseq, eval=FALSE}
+# Your phyloseq object
+my_data <- phyloseq(
+  otu_table(otu_matrix, taxa_are_rows = TRUE),
+  sample_data(metadata),
+  tax_table(taxonomy)
+)
+
+# Analyze
+results <- diversity_suite(my_data)
+```
+
+### From BIOM Format
+
+```{r your-data-biom, eval=FALSE}
+# Convert BIOM to phyloseq
+my_data <- biom_to_phyloseq("path/to/file.biom")
+
+# Analyze
+results <- diversity_suite(my_data)
+```
+
+### From CSV Files
+
+```{r your-data-csv, eval=FALSE}
+# Load OTU table and metadata
+otu_table <- read.csv("otu_table.csv", row.names = 1)
+metadata <- read.csv("metadata.csv", row.names = 1)
+
+# Create phyloseq object
+my_data <- phyloseq(
+  otu_table(as.matrix(otu_table), taxa_are_rows = TRUE),
+  sample_data(metadata)
+)
+
+# Analyze
+results <- diversity_suite(my_data)
+```
+
+## API for Programmatic Access
+
+For advanced users and pipeline integration:
+
+```{r api-example}
+# Use the unified API
+result <- diversityGPT_api(
+  "analyze",
+  phyloseq_obj = GlobalPatterns,
+  components = c("universal", "mechanisms")
+)
+
+# Check status
+if (is_api_success(result)) {
+  data <- get_api_data(result)
+  print(names(data))
+}
+```
+
+## Next Steps
+
+1. Read the `vignette("universal-framework")` to understand the mathematical foundations
+2. Explore `vignette("ecological-intelligence")` for AI-powered features
+3. Check `vignette("advanced-analysis")` for complex workflows
+4. Join our community at https://github.com/shandley/diversityGPT
+
+## Getting Help
+
+```{r help, eval=FALSE}
+# Package documentation
+?diversityGPT
+
+# Function help
+?extract_universal_information
+?universal_diversity_transform
+
+# Browse all vignettes
+browseVignettes("diversityGPT")
+```
+
+## Citation
+
+If you use diversityGPT in your research, please cite:
+
+```{r citation}
+citation("diversityGPT")
+```

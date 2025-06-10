@@ -1,0 +1,243 @@
+---
+title: "Universal Diversity Metric Transformation Framework"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Universal Diversity Metric Transformation Framework}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+```{r setup}
+library(diversityGPT)
+library(phyloseq)
+```
+
+## Introduction
+
+The diversityGPT package introduces a revolutionary mathematical framework that solves a fundamental problem in microbiome analysis: the inability to compare and transform between different diversity metrics. This vignette explains the theoretical foundations and practical applications of the Universal Information Framework.
+
+## The Problem: Diversity Metric Confusion
+
+Microbiome researchers face a critical challenge: different diversity metrics often give conflicting results. For example:
+
+- Shannon diversity might increase while Simpson diversity decreases
+- Chao1 (richness) might be high while Faith's PD (phylogenetic diversity) is low
+- Different studies use different metrics, making meta-analysis difficult
+
+Traditional approaches treat each metric in isolation, missing the underlying mathematical relationships between them.
+
+## The Solution: Information Theory Decomposition
+
+diversityGPT implements a universal framework based on information theory that decomposes ANY diversity metric into four fundamental components:
+
+1. **R (Richness)**: Information about the number of unique taxa
+2. **E (Evenness)**: Information about the distribution of abundances
+3. **P (Phylogenetic)**: Information about evolutionary relationships
+4. **S (Spatial)**: Information about spatial or functional relationships
+
+## Mathematical Foundation
+
+Every diversity metric can be expressed as:
+
+$$\text{Metric} = w_R \cdot R + w_E \cdot E + w_P \cdot P + w_S \cdot S + \epsilon$$
+
+Where:
+- $w_R, w_E, w_P, w_S$ are metric-specific weights
+- $\epsilon$ is residual information unique to that metric
+
+This decomposition enables:
+- **Transformation**: Convert any metric to any other metric
+- **Prediction**: Estimate missing metrics from available ones
+- **Standardization**: Compare metrics across different studies
+
+## Basic Usage
+
+### Extract Universal Information
+
+```{r universal-extraction}
+# Load example data
+data(GlobalPatterns)
+
+# Extract universal information components
+universal_info <- extract_universal_information(GlobalPatterns)
+
+# View the structure
+print(universal_info)
+```
+
+The `universal_info` object contains:
+- **information_components**: R, E, P, S values for each sample
+- **transformation_matrix**: Mathematical relationships between metrics
+- **deconvolution_quality**: Reliability scores for transformations
+
+### Visualize Information Components
+
+```{r plot-components, fig.height=6}
+# Plot the information components
+plot(universal_info, type = "components")
+```
+
+This visualization shows how each sample's diversity is composed of the four fundamental components.
+
+## Metric Transformation
+
+### Transform Between Metrics
+
+```{r transformation}
+# Example: Transform Shannon to Simpson and Chao1
+source_metrics <- data.frame(
+  shannon = c(2.1, 2.5, 1.8, 2.3, 2.7),
+  row.names = paste0("Sample", 1:5)
+)
+
+# Perform transformation
+transformed <- universal_diversity_transform(
+  source_metrics = source_metrics,
+  target_metrics = c("simpson", "chao1", "faith_pd"),
+  transformation_matrix = universal_info$transformation_matrix
+)
+
+# View results
+print(transformed)
+plot(transformed)
+```
+
+### Assess Transformation Quality
+
+```{r quality-assessment}
+# The transformation includes quality metrics
+quality <- attr(transformed, "quality")
+print(quality)
+```
+
+R² values indicate the reliability of each transformation. Values > 0.8 indicate high reliability.
+
+## Advanced Applications
+
+### Cross-Study Standardization
+
+When comparing studies that used different diversity metrics:
+
+```{r cross-study, eval=FALSE}
+# Study 1 used Shannon and Simpson
+study1_metrics <- data.frame(
+  shannon = c(2.1, 2.3, 2.5),
+  simpson = c(0.8, 0.85, 0.9)
+)
+
+# Study 2 used Chao1 and Faith's PD
+study2_metrics <- data.frame(
+  chao1 = c(45, 52, 48),
+  faith_pd = c(8.2, 9.1, 8.7)
+)
+
+# Standardize to common metrics
+study1_standardized <- universal_diversity_transform(
+  source_metrics = study1_metrics,
+  target_metrics = c("observed", "evenness"),
+  transformation_matrix = universal_info$transformation_matrix
+)
+
+study2_standardized <- universal_diversity_transform(
+  source_metrics = study2_metrics,
+  target_metrics = c("observed", "evenness"),
+  transformation_matrix = universal_info$transformation_matrix
+)
+
+# Now both studies can be compared using the same metrics
+```
+
+### Missing Metric Imputation
+
+When some diversity metrics are unavailable:
+
+```{r imputation}
+# Have Shannon, want to predict other metrics
+available_metrics <- data.frame(
+  shannon = c(2.1, 2.5, 1.8),
+  observed = c(35, 42, 28),
+  row.names = c("Sample1", "Sample2", "Sample3")
+)
+
+# Predict missing metrics
+predicted <- predict_missing_diversity_metrics(
+  available_metrics = available_metrics,
+  phyloseq_reference = GlobalPatterns
+)
+
+print(predicted)
+```
+
+### Relationship Discovery
+
+Explore mathematical relationships between metrics:
+
+```{r relationships}
+# Discover relationships
+relationships <- discover_metric_relationships(GlobalPatterns)
+
+# Visualize as network
+plot_diversity_network(relationships, layout = "force")
+```
+
+## Theoretical Insights
+
+### Why This Works
+
+The universal framework works because:
+
+1. **Conservation of Information**: Total diversity information is conserved across transformations
+2. **Linear Decomposition**: Most diversity metrics are linear combinations of fundamental components
+3. **Orthogonal Components**: R, E, P, S capture independent aspects of diversity
+
+### Component Interpretation
+
+- **High R, Low E**: Many rare species (diverse but uneven)
+- **Low R, High E**: Few species but evenly distributed
+- **High P**: Phylogenetically diverse community
+- **High S**: Functionally or spatially structured community
+
+### Limitations
+
+- **Nonlinear Metrics**: Some metrics (e.g., Berger-Parker) have nonlinear relationships
+- **Data Requirements**: Transformation quality depends on reference dataset diversity
+- **Phylogenetic Info**: P component requires phylogenetic tree
+
+## Best Practices
+
+1. **Use Representative Reference Data**: The transformation matrix quality depends on the diversity of the reference dataset
+
+2. **Check Transformation Quality**: Always examine R² values before trusting transformations
+
+3. **Validate with Known Data**: When possible, validate transformations against datasets where multiple metrics are available
+
+4. **Consider Context**: Some transformations are more reliable within similar ecosystem types
+
+## Conclusion
+
+The Universal Information Framework in diversityGPT provides:
+- Mathematical foundation for diversity metric relationships
+- Practical tools for metric transformation and standardization
+- New insights into the nature of biodiversity
+
+This framework enables meta-analyses, cross-study comparisons, and deeper understanding of diversity patterns that were previously impossible.
+
+## References
+
+1. Information Theory and Diversity Metrics (In preparation)
+2. Mathematical Foundations of Universal Diversity Decomposition (Submitted)
+
+## Session Info
+
+```{r session-info}
+sessionInfo()
+```

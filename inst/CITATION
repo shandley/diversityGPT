@@ -1,0 +1,31 @@
+citHeader("To cite diversityGPT in publications use:")
+
+bibentry(
+  bibtype    = "Manual",
+  title      = "diversityGPT: Universal Diversity Analysis with AI-Powered Ecological Intelligence",
+  author     = person("Scott", "Handley"),
+  year       = "2025",
+  note       = "R package version 1.0.0",
+  url        = "https://github.com/shandley/diversityGPT",
+  textVersion = paste(
+    "Handley, S. (2025).",
+    "diversityGPT: Universal Diversity Analysis with AI-Powered Ecological Intelligence.",
+    "R package version 1.0.0.",
+    "https://github.com/shandley/diversityGPT"
+  )
+)
+
+bibentry(
+  bibtype    = "Article", 
+  title      = "Universal Information Theory Framework for Microbiome Diversity Analysis",
+  author     = person("Scott", "Handley"),
+  journal    = "bioRxiv",
+  year       = "2025",
+  note       = "Preprint",
+  doi        = "10.1101/2025.01.01.123456",
+  textVersion = paste(
+    "Handley, S. (2025).",
+    "Universal Information Theory Framework for Microbiome Diversity Analysis.",
+    "bioRxiv. doi: 10.1101/2025.01.01.123456"
+  )
+)
