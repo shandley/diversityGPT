@@ -18,7 +18,12 @@
 - 🤝 **Consensus Algorithms**: Resolve metric conflicts with R² > 0.9 accuracy
 - 🧠 **AI-Powered Interpretation**: Dual LLM support for ecological insights and hypothesis generation
 
-### New in Version 0.2.0 (Phase 2C Complete!)
+### New in Version 0.3.0 (Phase 3 Complete!)
+- 🔬 **Ecological Intelligence**: AI-powered assembly mechanism detection and hypothesis generation
+  - `detect_assembly_mechanisms()`: Environmental filtering, competition, neutral processes
+  - `generate_ecological_hypotheses()`: Multi-type hypothesis generation with experimental designs
+  - `llm_multi_step_analysis()`: Advanced reasoning chains for ecological interpretation
+  - `search_literature()`: Multi-database scientific literature integration
 - 📊 **Interactive Shiny Applications**: 4 specialized apps for real-time analysis
   - Main Diversity Explorer with full dashboard
   - Component Explorer for R,E,P,S parameter space
@@ -29,7 +34,7 @@
 - ⚡ **Performance Optimizations**: Parallel processing, sparse matrices, intelligent caching
 - 📈 **Advanced Visualizations**: Network plots, 3D surfaces, component dashboards
 - 📚 **Comprehensive Documentation**: 6 detailed vignettes + pkgdown website
-- 🚀 **Production Ready**: Complete ecosystem for microbiome diversity analysis
+- 🚀 **Production Ready**: Complete ecosystem for microbiome diversity analysis and discovery
 
 ## Installation
 
@@ -78,15 +83,107 @@ predicted <- universal_diversity_transform(
 plot_diversity_network(universal_info, interactive = TRUE)
 plot_information_components(universal_info)
 
-# 5. Get AI interpretation
-interpretation <- interpret_diversity(
+# 5. Detect assembly mechanisms
+mechanisms <- detect_assembly_mechanisms(
   universal_info,
-  context = list(
+  environmental_data = env_data
+)
+print(mechanisms)
+
+# 6. Generate ecological hypotheses
+hypotheses <- generate_ecological_hypotheses(
+  universal_info = universal_info,
+  assembly_mechanisms = mechanisms,
+  study_context = list(
     environment = "human_gut",
     condition = "antibiotic_treatment",
     hypothesis = "diversity recovery"
   )
 )
+
+# 7. Multi-step LLM analysis
+analysis <- llm_multi_step_analysis(
+  universal_info = universal_info,
+  assembly_mechanisms = mechanisms,
+  hypotheses = hypotheses,
+  reasoning_depth = "deep",
+  llm_provider = "anthropic"
+)
+```
+
+## 🔬 Ecological Intelligence System
+
+### Assembly Mechanism Detection
+```r
+# Detect community assembly processes
+mechanisms <- detect_assembly_mechanisms(
+  universal_info,
+  environmental_data = env_metadata,
+  method = "comprehensive"
+)
+
+# Results:
+# Primary mechanism: Environmental Filtering (confidence: 0.847)
+# Supporting evidence: Strong pH-diversity correlation (r = 0.73)
+# Interpretation: Abiotic factors selectively filter species
+```
+
+### Advanced Hypothesis Generation
+```r
+# Generate testable ecological hypotheses
+hypotheses <- generate_ecological_hypotheses(
+  universal_info = universal_info,
+  assembly_mechanisms = mechanisms,
+  hypothesis_types = c("mechanistic", "predictive", "experimental"),
+  study_context = list(
+    environment = "soil_microbiome",
+    condition = "pH_gradient"
+  )
+)
+
+# Results:
+# 1. [MECHANISTIC] Environmental gradients drive species sorting (novelty: 0.6, testability: 0.8)
+# 2. [PREDICTIVE] Diversity patterns will be highly predictable (novelty: 0.5, testability: 0.9)
+# 3. [EXPERIMENTAL] Transplant experiments will show low establishment (novelty: 0.7, testability: 0.8)
+```
+
+### Multi-Step LLM Analysis
+```r
+# Comprehensive AI-powered analysis
+analysis <- llm_multi_step_analysis(
+  universal_info = universal_info,
+  assembly_mechanisms = mechanisms,
+  hypotheses = hypotheses,
+  reasoning_depth = "expert",
+  include_literature = TRUE,
+  llm_provider = "anthropic"
+)
+
+# Results include:
+# - Step-by-step reasoning chain
+# - Novel ecological insights
+# - Research recommendations
+# - Literature integration
+# - Confidence assessments
+```
+
+### Literature Integration
+```r
+# Search and integrate scientific literature
+literature <- search_literature(
+  universal_info = universal_info,
+  assembly_mechanisms = mechanisms,
+  study_context = list(environment = "marine", organism = "bacteria"),
+  search_databases = "all",
+  max_papers = 20,
+  llm_synthesis = TRUE
+)
+
+# Results:
+# Found 18 relevant papers
+# Novel connections identified: 3
+# Research gaps identified: 2
+# Literature synthesis: "Findings align with established theory..."
 ```
 
 ## 🎯 Interactive Shiny Applications

@@ -4,7 +4,7 @@
 \name{diversityGPT-package}
 \alias{diversityGPT}
 \alias{diversityGPT-package}
-\title{diversityGPT: AI-Powered Microbiome Diversity Analysis with Intelligent Synthesis}
+\title{diversityGPT: Universal Diversity Metric Transformation for Microbiome Analysis}
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
