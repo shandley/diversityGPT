@@ -21,6 +21,21 @@
 - **Real-Time Ecological Commentary**: Context-aware interpretation of metric relationships
 
 ## Current Development Phase
+**Phase 5B: Information Theory - ✅ COMPLETED**
+- Revolutionary mutual information framework for taxa-component relationships ✅
+- Multiple discretization methods (equal-width, equal-frequency, k-means) ✅
+- Bias-corrected information estimators (Miller-Madow, shrinkage) ✅
+- Conditional mutual information for interaction effect detection ✅
+- Information gain metrics and comprehensive ranking system ✅
+- Complete visualization suite (heatmaps, networks, comparisons) ✅
+- Rigorous mathematical foundation replacing heuristic "driver" analysis ✅
+
+**Phase 5A: Null Model Framework - ✅ COMPLETED**
+- Comprehensive null model testing with 4 randomization algorithms ✅
+- Statistical significance testing with p-values and effect sizes ✅
+- Row shuffle, column shuffle, curveball, and phylogenetic null models ✅
+- Publication-ready validation and visualization framework ✅
+
 **Phase 2A: Universal Information Framework - ✅ COMPLETED**
 - Revolutionary mathematical deconvolution system (R, E, P, S components) ✅
 - Any-to-any diversity metric transformation algorithms ✅

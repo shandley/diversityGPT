@@ -1,0 +1,335 @@
+---
+title: "Identifying Taxa Driving Information Components"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Identifying Taxa Driving Information Components}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+```{r setup}
+library(diversityGPT)
+library(ggplot2)
+```
+
+## Introduction
+
+One of the most powerful features of diversityGPT is the ability to identify which specific taxa drive the different information components (R, E, P, S) in diversity patterns. This vignette demonstrates how to use the taxa driver analysis to gain biological insights into your microbiome data.
+
+## Understanding Information Components
+
+The universal information framework decomposes diversity into four components:
+
+- **Richness (R)**: Information from the number of different taxa
+- **Evenness (E)**: Information from the relative abundance distribution
+- **Phylogenetic (P)**: Information from evolutionary relationships
+- **Spatial (S)**: Information from spatial/environmental heterogeneity
+
+## Basic Taxa Driver Analysis
+
+Let's start with a simple example:
+
+```{r basic-example}
+# Create demo data with meaningful patterns
+set.seed(123)
+demo_data <- create_demo_phyloseq(n_samples = 20, n_taxa = 100)
+
+# Extract universal information components
+info <- extract_universal_information(demo_data)
+
+# Identify taxa drivers
+drivers <- identify_taxa_drivers(demo_data, 
+                                 components = info,
+                                 top_n = 10,
+                                 method = "contribution")
+
+# View the results
+print(drivers)
+```
+
+## Understanding Driver Methods
+
+The package offers three methods for identifying driver taxa:
+
+### 1. Contribution Method (Default)
+
+This method calculates how much each taxon contributes to the total information in each component:
+
+```{r contribution-method}
+drivers_contrib <- identify_taxa_drivers(demo_data,
+                                        method = "contribution",
+                                        top_n = 5,
+                                        verbose = FALSE)
+
+# Top richness drivers are taxa that are frequently present
+head(drivers_contrib$richness_drivers[, c("taxon", "contribution", "presence_frequency")])
+```
+
+### 2. Variance Method
+
+This method identifies taxa whose abundance variance drives changes in each component:
+
+```{r variance-method}
+drivers_var <- identify_taxa_drivers(demo_data,
+                                    method = "variance", 
+                                    top_n = 5,
+                                    verbose = FALSE)
+
+# High variance taxa drive spatial patterns
+head(drivers_var$spatial_drivers[, c("taxon", "contribution", "dispersion_index")])
+```
+
+### 3. Correlation Method
+
+This method finds taxa whose patterns correlate with each information component:
+
+```{r correlation-method}
+drivers_cor <- identify_taxa_drivers(demo_data,
+                                    method = "correlation",
+                                    top_n = 5,
+                                    verbose = FALSE)
+
+# Taxa correlated with evenness patterns
+head(drivers_cor$evenness_drivers[, c("taxon", "contribution", "mean_relative_abundance")])
+```
+
+## Visualizing Taxa Drivers
+
+### Bar Plot
+
+Shows top driver taxa for each component:
+
+```{r bar-plot, fig.height=8}
+plot(drivers, type = "bar", top_n = 10)
+```
+
+### Network Visualization
+
+Shows relationships between taxa and components:
+
+```{r network-plot, fig.height=6}
+plot(drivers, type = "network", top_n = 8, interactive = FALSE)
+```
+
+### Heatmap
+
+Shows contribution patterns across all components:
+
+```{r heatmap, fig.height=8}
+plot(drivers, type = "heatmap", top_n = 15)
+```
+
+### Multi-Component Drivers
+
+Identifies taxa that drive multiple components:
+
+```{r contribution-plot}
+plot(drivers, type = "contribution", top_n = 20)
+```
+
+## Biological Interpretation
+
+### Richness Drivers
+
+Taxa driving richness are typically:
+- Core microbiome members (high presence frequency)
+- Indicator species for specific conditions
+- Taxa with broad environmental tolerance
+
+```{r richness-interpretation}
+# Examine richness drivers in detail
+richness_drivers <- drivers$richness_drivers
+cat("Top 3 richness drivers:\n")
+for (i in 1:3) {
+  cat(sprintf("  %s: %.1f%% presence, %.2f mean abundance\n",
+              richness_drivers$taxon[i],
+              richness_drivers$presence_frequency[i] * 100,
+              richness_drivers$mean_abundance[i]))
+}
+```
+
+### Evenness Drivers
+
+Taxa driving evenness patterns are typically:
+- Dominant species that reduce evenness
+- Bloom-forming taxa
+- Competitive dominants
+
+```{r evenness-interpretation}
+# Examine evenness drivers
+evenness_drivers <- drivers$evenness_drivers
+cat("\nTop 3 evenness drivers (dominance indicators):\n")
+for (i in 1:3) {
+  cat(sprintf("  %s: %.1f%% mean relative abundance, CV=%.2f\n",
+              evenness_drivers$taxon[i],
+              evenness_drivers$mean_relative_abundance[i] * 100,
+              evenness_drivers$cv_relative_abundance[i]))
+}
+```
+
+### Spatial Drivers
+
+Taxa driving spatial patterns show:
+- Patchy distributions
+- Environmental specificity
+- Dispersal limitation
+
+```{r spatial-interpretation}
+# Examine spatial drivers
+spatial_drivers <- drivers$spatial_drivers
+cat("\nTop 3 spatial drivers (patchy distribution):\n")
+for (i in 1:3) {
+  cat(sprintf("  %s: dispersion index=%.2f, occupancy=%.1f%%\n",
+              spatial_drivers$taxon[i],
+              spatial_drivers$dispersion_index[i],
+              spatial_drivers$occupancy[i] * 100))
+}
+```
+
+## Advanced Analysis with Groups
+
+When you have experimental groups or environmental gradients:
+
+```{r grouped-analysis}
+# Add treatment groups to demo data
+sample_data(demo_data)$Treatment <- rep(c("Control", "Treatment"), each = 10)
+
+# Analyze with groups
+drivers_grouped <- identify_taxa_drivers(demo_data,
+                                        groups = "Treatment",
+                                        method = "variance",
+                                        top_n = 5,
+                                        verbose = FALSE)
+
+# Spatial drivers now reflect between-group differences
+cat("Spatial drivers reflecting treatment effects:\n")
+print(drivers_grouped$spatial_drivers[, c("taxon", "contribution")])
+```
+
+## Multi-Component Driver Analysis
+
+Some taxa drive multiple information components:
+
+```{r multi-drivers}
+# Find taxa driving multiple components
+summary_stats <- drivers$summary$overall
+
+if (summary_stats$n_multi_component > 0) {
+  cat("Taxa driving multiple components:\n")
+  for (taxon in head(summary_stats$multi_component_drivers, 5)) {
+    # Find which components this taxon drives
+    components <- c()
+    if (taxon %in% drivers$richness_drivers$taxon) components <- c(components, "R")
+    if (taxon %in% drivers$evenness_drivers$taxon) components <- c(components, "E") 
+    if (taxon %in% drivers$phylogenetic_drivers$taxon) components <- c(components, "P")
+    if (taxon %in% drivers$spatial_drivers$taxon) components <- c(components, "S")
+    
+    cat(sprintf("  %s: drives %s\n", taxon, paste(components, collapse = ", ")))
+  }
+}
+```
+
+## Generating Reports
+
+Create comprehensive HTML reports of your analysis:
+
+```{r report, eval=FALSE}
+# Generate HTML report
+report_taxa_drivers(drivers, 
+                   demo_data,
+                   output_file = "taxa_drivers_report.html",
+                   title = "Microbiome Taxa Driver Analysis")
+```
+
+## Best Practices
+
+1. **Choose the right method**:
+   - Use "contribution" for overall importance
+   - Use "variance" for change drivers
+   - Use "correlation" for pattern associations
+
+2. **Normalize wisely**:
+   - Normalize when comparing across components
+   - Don't normalize when absolute contributions matter
+
+3. **Consider sample size**:
+   - More samples give more reliable driver identification
+   - Bootstrap for confidence intervals with small samples
+
+4. **Validate findings**:
+   - Cross-reference with known biology
+   - Confirm with targeted analyses
+   - Use multiple methods for robustness
+
+## Integration with Ecological Intelligence
+
+Combine taxa drivers with AI interpretation:
+
+```{r ai-integration, eval=FALSE}
+# Configure LLM (requires API key)
+configure_llm(provider = "openai", model = "gpt-4")
+
+# Get ecological interpretation of drivers
+interpretation <- interpret_diversity_patterns(
+  drivers,
+  study_context = list(
+    environment = "human_gut",
+    condition = "antibiotic_treatment"
+  )
+)
+
+# Generate hypotheses about driver taxa
+hypotheses <- generate_ecological_hypotheses(
+  drivers,
+  taxa_of_interest = drivers$richness_drivers$taxon[1:3]
+)
+```
+
+## Troubleshooting
+
+### No phylogenetic tree
+If your data lacks a phylogenetic tree, the analysis will use taxonomic information:
+
+```{r no-tree}
+# Remove tree from demo data
+demo_no_tree <- demo_data
+phy_tree(demo_no_tree) <- NULL
+
+# Still works using taxonomy
+drivers_no_tree <- identify_taxa_drivers(demo_no_tree, 
+                                        top_n = 5,
+                                        verbose = FALSE)
+print(drivers_no_tree$phylogenetic_drivers[1:3, c("taxon", "contribution")])
+```
+
+### Handling zeros
+The methods handle zero-inflated data appropriately:
+
+```{r zero-handling}
+# Create sparse data
+otu_sparse <- otu_table(demo_data)
+otu_sparse[otu_sparse < 5] <- 0  # Make data sparse
+
+demo_sparse <- phyloseq(otu_sparse, 
+                        sample_data(demo_data),
+                        tax_table(demo_data))
+
+# Analysis still works
+drivers_sparse <- identify_taxa_drivers(demo_sparse,
+                                       top_n = 5,
+                                       verbose = FALSE)
+cat("Identified", nrow(drivers_sparse$richness_drivers), "richness drivers\n")
+```
+
+## Conclusion
+
+Taxa driver analysis provides crucial biological insights by identifying which specific microbes contribute most to diversity patterns. This bridges the gap between mathematical decomposition and biological understanding, enabling targeted follow-up studies and hypothesis generation.

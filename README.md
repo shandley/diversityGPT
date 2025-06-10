@@ -18,7 +18,21 @@
 - 🤝 **Consensus Algorithms**: Resolve metric conflicts with R² > 0.9 accuracy
 - 🧠 **AI-Powered Interpretation**: Dual LLM support for ecological insights and hypothesis generation
 
-### New in Version 1.0.0 (CRAN Release!)
+### New in Version 1.0.0 (Development Features!)
+- 🧬 **Taxa Indicator Analysis**: Rigorous mathematical approach to identify key organisms
+  - **Phase 5A**: Comprehensive null model testing with 4 randomization algorithms
+  - **Phase 5B**: Information-theoretic analysis using mutual information and conditional MI
+  - **Planned Phase 5C**: Shapley value attribution for fair decomposition
+  - **Planned Phase 5D**: Bootstrap confidence intervals and uncertainty quantification
+- 🔬 **Information Theory Framework**: Revolutionary mathematical foundation
+  - `calculate_taxa_mutual_information()`: Rigorous statistical dependence quantification
+  - `calculate_conditional_mutual_information()`: Interaction effect detection
+  - Multiple discretization methods (equal-width, equal-frequency, k-means)
+  - Bias-corrected estimators (Miller-Madow, shrinkage) for finite samples
+- 🎯 **Null Model Validation**: Statistical significance testing
+  - `validate_taxa_indicators()`: 4 null models with p-values and effect sizes
+  - Row shuffle, column shuffle, curveball, and phylogenetic null models
+  - Publication-ready visualization and reporting
 - 🔬 **Ecological Intelligence**: AI-powered assembly mechanism detection and hypothesis generation
   - `detect_assembly_mechanisms()`: Environmental filtering, competition, neutral processes
   - `generate_ecological_hypotheses()`: Multi-type hypothesis generation with experimental designs
@@ -135,6 +149,69 @@ analysis <- llm_multi_step_analysis(
   llm_provider = "anthropic"
 )
 ```
+
+## 🧬 Advanced Taxa Indicator Analysis
+
+### Information-Theoretic Approach (NEW!)
+```r
+# Revolutionary mutual information analysis
+mi_results <- calculate_taxa_mutual_information(
+  physeq,
+  components = universal_info,
+  discretization = "equal_width",
+  method = "mm",  # Miller-Madow bias correction
+  verbose = TRUE
+)
+
+# View top information-rich taxa
+print(mi_results)
+# Information Theory Analysis Results
+# Method: mm
+# =====================================
+# RICHNESS COMPONENT:
+#   1. OTU123 (NMI: 0.847, MI: 0.234)
+#   2. OTU456 (NMI: 0.792, MI: 0.187)
+
+# Detect interaction effects
+cmi_results <- calculate_conditional_mutual_information(
+  physeq,
+  components = universal_info,
+  conditioning_taxa = c("dominant_taxa"),
+  verbose = TRUE
+)
+
+# Visualize information relationships
+plot(mi_results, type = "heatmap", interactive = TRUE)
+plot(mi_results, type = "network", top_n = 15)
+```
+
+### Null Model Statistical Validation
+```r
+# Rigorous statistical testing with 4 null models
+validation <- validate_taxa_indicators(
+  physeq,
+  indicators = mi_results,
+  null_models = c("row_shuffle", "curveball"),
+  n_permutations = 999
+)
+
+# Results with p-values and effect sizes
+print(validation)
+# Null Model Validation Results
+# ==============================
+# Significant indicators (p < 0.05): 12/20
+# Effect sizes (Cohen's d): 0.23 - 1.47
+# Multiple testing correction: FDR
+```
+
+### Mathematical Foundation
+diversityGPT now provides the **most rigorous taxa indicator analysis** available:
+
+- **Information Theory**: Mutual information quantifies statistical dependence without linear assumptions
+- **Conditional Analysis**: I(Taxon; Component | Context) reveals interaction effects
+- **Bias Correction**: Miller-Madow and shrinkage estimators for finite sample reliability
+- **Null Model Testing**: 4 randomization algorithms with proper statistical inference
+- **Effect Size Quantification**: Standardized measures for cross-study comparison
 
 ## 🔬 Ecological Intelligence System
 

@@ -4,6 +4,13 @@
 
 ### Major Features for Production Use
 
+#### Taxa Driver Analysis (NEW)
+* **Driver Identification**: Identify specific taxa driving R, E, P, S information components
+* **Multiple Methods**: Contribution, variance, and correlation-based driver detection
+* **Rich Visualizations**: Network plots, heatmaps, and multi-component driver analysis
+* **Biological Insights**: Connect mathematical patterns to specific microbial taxa
+* **Group Analysis**: Identify drivers within experimental groups or conditions
+
 #### API Framework
 * **Unified API**: Single entry point via `diversityGPT_api()` for all operations
 * **REST API**: Web service endpoints using plumber for remote access
