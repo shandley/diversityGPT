@@ -63,6 +63,14 @@ detect_assembly_mechanisms <- function(universal_info,
   transformation_matrix <- universal_info$transformation_matrix
   quality_metrics <- universal_info$quality_metrics
   
+  # Rename component columns to expected format
+  if ("R_component" %in% names(components)) {
+    components$R <- components$R_component
+    components$E <- components$E_component
+    if ("P_component" %in% names(components)) components$P <- components$P_component
+    if ("S_component" %in% names(components)) components$S <- components$S_component
+  }
+  
   # Initialize results list
   results <- list(
     mechanisms = data.frame(),
@@ -275,7 +283,9 @@ detect_assembly_mechanisms <- function(universal_info,
     
     # Check transformation quality (low quality suggests high randomness)
     if (!is.null(transformation_matrix)) {
-      mean_quality <- mean(diag(transformation_matrix), na.rm = TRUE)
+      mean_quality <- ifelse(is.data.frame(transformation_matrix),
+                            mean(transformation_matrix$r_squared, na.rm = TRUE),
+                            mean(diag(transformation_matrix), na.rm = TRUE))
       
       # High variance + low predictability = neutral processes
       if (total_var > 0.5 && mean_quality < 0.6) {
@@ -701,10 +711,20 @@ generate_ecological_hypotheses <- function(universal_info,
   components <- universal_info$information_components
   quality_metrics <- universal_info$quality_metrics
   
+  # Rename component columns to expected format
+  if ("R_component" %in% names(components)) {
+    components$R <- components$R_component
+    components$E <- components$E_component
+    if ("P_component" %in% names(components)) components$P <- components$P_component
+    if ("S_component" %in% names(components)) components$S <- components$S_component
+  }
+  
   patterns <- list(
     component_dominance = .identify_dominant_components(components),
     component_correlations = .calculate_component_correlations(components),
-    transformation_quality = mean(diag(universal_info$transformation_matrix), na.rm = TRUE),
+    transformation_quality = ifelse(is.data.frame(universal_info$transformation_matrix),
+                                    mean(universal_info$transformation_matrix$r_squared, na.rm = TRUE),
+                                    mean(diag(universal_info$transformation_matrix), na.rm = TRUE)),
     variability_patterns = .analyze_component_variability(components),
     outlier_samples = .identify_outlier_samples(components)
   )

@@ -484,7 +484,9 @@ search_literature <- function(universal_info,
   
   for (db_name in names(all_papers)) {
     db_papers <- all_papers[[db_name]]
-    combined <- c(combined, db_papers)
+    if (length(db_papers) > 0) {
+      combined <- c(combined, db_papers)
+    }
   }
   
   # Simple deduplication based on title similarity
@@ -633,6 +635,20 @@ search_literature <- function(universal_info,
 }
 
 .create_relevance_ranking <- function(papers, scores) {
+  
+  if (length(papers) == 0) {
+    # Return empty data frame with correct structure
+    return(data.frame(
+      rank = integer(0),
+      title = character(0),
+      authors = character(0),
+      journal = character(0),
+      year = integer(0),
+      relevance_score = numeric(0),
+      database = character(0),
+      stringsAsFactors = FALSE
+    ))
+  }
   
   ranking <- data.frame(
     rank = 1:length(papers),
