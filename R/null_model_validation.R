@@ -11,7 +11,7 @@ NULL
 #' using multiple null model algorithms.
 #'
 #' @param physeq A phyloseq object
-#' @param indicators Taxa indicators object (from identify_taxa_drivers)
+#' @param indicators Taxa indicators object (from identify_taxa_indicators)
 #' @param null_models Character vector of null models to use:
 #'   "row_shuffle", "column_shuffle", "curveball", "phylogenetic"
 #' @param n_permutations Number of permutations (default: 999)
@@ -32,7 +32,7 @@ NULL
 #' demo_data <- create_demo_phyloseq()
 #' 
 #' # Get indicators
-#' indicators <- identify_taxa_drivers(demo_data, top_n = 10)
+#' indicators <- identify_taxa_indicators(demo_data, top_n = 10)
 #' 
 #' # Validate with null models
 #' validated <- validate_taxa_indicators(demo_data, indicators, 
@@ -147,7 +147,7 @@ run_row_shuffle_null <- function(physeq, indicators, n_perm, parallel, n_cores) 
     }
     
     # Calculate indicators for null community
-    null_indicators <- identify_taxa_drivers(null_physeq, 
+    null_indicators <- identify_taxa_indicators(null_physeq, 
                                            top_n = nrow(indicators$richness_drivers),
                                            method = indicators$method,
                                            verbose = FALSE)
@@ -198,7 +198,7 @@ run_column_shuffle_null <- function(physeq, indicators, n_perm, parallel, n_core
     }
     
     # Calculate indicators
-    null_indicators <- identify_taxa_drivers(null_physeq,
+    null_indicators <- identify_taxa_indicators(null_physeq,
                                            top_n = nrow(indicators$richness_drivers),
                                            method = indicators$method,
                                            verbose = FALSE)
@@ -268,7 +268,7 @@ run_curveball_null <- function(physeq, indicators, n_perm, parallel, n_cores) {
     }
     
     # Calculate indicators
-    null_indicators <- identify_taxa_drivers(null_physeq,
+    null_indicators <- identify_taxa_indicators(null_physeq,
                                            top_n = nrow(indicators$richness_drivers),
                                            method = indicators$method,
                                            verbose = FALSE)
@@ -377,7 +377,7 @@ run_phylogenetic_null <- function(physeq, indicators, n_perm, parallel, n_cores)
     phyloseq::phy_tree(null_physeq) <- tree
     
     # Calculate indicators
-    null_indicators <- identify_taxa_drivers(null_physeq,
+    null_indicators <- identify_taxa_indicators(null_physeq,
                                            top_n = nrow(indicators$richness_drivers),
                                            method = indicators$method,
                                            verbose = FALSE)
@@ -425,7 +425,7 @@ calculate_significance <- function(indicators, null_distributions) {
   components <- c("richness", "evenness", "phylogenetic", "spatial")
   
   for (component in components) {
-    comp_name <- paste0(component, "_drivers")
+    comp_name <- paste0(component, "_indicators")
     if (!is.null(indicators[[comp_name]])) {
       
       observed_values <- indicators[[comp_name]]$contribution
@@ -494,7 +494,7 @@ extract_significant_indicators <- function(indicators, alpha = 0.05) {
   components <- c("richness", "evenness", "phylogenetic", "spatial")
   
   for (component in components) {
-    comp_name <- paste0(component, "_drivers")
+    comp_name <- paste0(component, "_indicators")
     if (!is.null(indicators[[comp_name]]) && "p_value" %in% names(indicators[[comp_name]])) {
       comp_df <- indicators[[comp_name]]
       sig_rows <- which(comp_df$p_value <= alpha)
@@ -529,7 +529,7 @@ summarize_validation <- function(validation_results, null_models) {
   components <- c("richness", "evenness", "phylogenetic", "spatial")
   
   for (component in components) {
-    comp_name <- paste0(component, "_drivers")
+    comp_name <- paste0(component, "_indicators")
     if (!is.null(validation_results[[comp_name]]) && 
         "p_value" %in% names(validation_results[[comp_name]])) {
       

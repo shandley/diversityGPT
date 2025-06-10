@@ -1,35 +1,35 @@
-#' Taxa Driver Visualization Functions
+#' Taxa Indicator Visualization Functions
 #'
-#' @description Advanced visualization functions for taxa driver analysis
-#' @name taxa_driver_plots
+#' @description Advanced visualization functions for taxa indicator analysis
+#' @name taxa_indicator_plots
 #' @keywords visualization
 NULL
 
-#' Plot Driver Network
+#' Plot Indicator Network
 #'
 #' Creates a network visualization showing relationships between taxa and components
 #'
-#' @param drivers Taxa drivers object
+#' @param indicators Taxa indicators object
 #' @param top_n Number of top taxa per component
 #' @param interactive Use interactive networkD3
 #'
 #' @return Network plot object
 #' @keywords internal
-plot_driver_network <- function(drivers, top_n, interactive) {
+plot_indicator_network <- function(indicators, top_n, interactive) {
   # Prepare edge data
   edges <- list()
   
   components <- c("richness", "evenness", "phylogenetic", "spatial")
   for (comp in components) {
-    comp_name <- paste0(comp, "_drivers")
-    if (!is.null(drivers[[comp_name]])) {
-      driver_df <- head(drivers[[comp_name]], top_n)
+    comp_name <- paste0(comp, "_indicators")
+    if (!is.null(indicators[[comp_name]])) {
+      indicator_df <- head(indicators[[comp_name]], top_n)
       
-      for (i in 1:nrow(driver_df)) {
+      for (i in 1:nrow(indicator_df)) {
         edges[[length(edges) + 1]] <- data.frame(
-          from = driver_df$taxon[i],
+          from = indicator_df$taxon[i],
           to = paste0(toupper(substr(comp, 1, 1)), "-component"),
-          weight = driver_df$contribution[i],
+          weight = indicator_df$contribution[i],
           component = comp,
           stringsAsFactors = FALSE
         )
@@ -109,7 +109,7 @@ plot_driver_network <- function(drivers, top_n, interactive) {
       ggraph::geom_node_text(ggplot2::aes(label = name),
                            repel = TRUE, size = 3) +
       ggraph::scale_edge_width(range = c(0.5, 3)) +
-      ggplot2::labs(title = "Taxa-Component Driver Network",
+      ggplot2::labs(title = "Taxa-Component Indicator Network",
                    subtitle = "Edge width represents contribution strength") +
       ggraph::theme_graph()
   }
@@ -117,24 +117,24 @@ plot_driver_network <- function(drivers, top_n, interactive) {
   return(p)
 }
 
-#' Plot Driver Heatmap
+#' Plot Indicator Heatmap
 #'
 #' Creates a heatmap showing taxa contributions across all components
 #'
-#' @param drivers Taxa drivers object
+#' @param indicators Taxa indicators object
 #' @param top_n Number of top taxa to include
 #' @param interactive Use plotly for interactivity
 #'
 #' @return Heatmap plot object
 #' @keywords internal
-plot_driver_heatmap <- function(drivers, top_n, interactive) {
-  # Collect all unique taxa from top drivers
+plot_indicator_heatmap <- function(indicators, top_n, interactive) {
+  # Collect all unique taxa from top indicators
   all_taxa <- unique(unlist(lapply(
-    c("richness_drivers", "evenness_drivers", 
-      "phylogenetic_drivers", "spatial_drivers"),
+    c("richness_indicators", "evenness_indicators", 
+      "phylogenetic_indicators", "spatial_indicators"),
     function(comp) {
-      if (!is.null(drivers[[comp]])) {
-        head(drivers[[comp]]$taxon, top_n)
+      if (!is.null(indicators[[comp]])) {
+        head(indicators[[comp]]$taxon, top_n)
       }
     }
   )))
@@ -150,12 +150,12 @@ plot_driver_heatmap <- function(drivers, top_n, interactive) {
   # Fill matrix
   components <- c("richness", "evenness", "phylogenetic", "spatial")
   for (i in seq_along(components)) {
-    comp_name <- paste0(components[i], "_drivers")
-    if (!is.null(drivers[[comp_name]])) {
-      driver_df <- drivers[[comp_name]]
-      for (j in 1:nrow(driver_df)) {
-        if (driver_df$taxon[j] %in% all_taxa) {
-          contribution_mat[driver_df$taxon[j], i] <- driver_df$contribution[j]
+    comp_name <- paste0(components[i], "_indicators")
+    if (!is.null(indicators[[comp_name]])) {
+      indicator_df <- indicators[[comp_name]]
+      for (j in 1:nrow(indicator_df)) {
+        if (indicator_df$taxon[j] %in% all_taxa) {
+          contribution_mat[indicator_df$taxon[j], i] <- indicator_df$contribution[j]
         }
       }
     }
@@ -205,38 +205,38 @@ plot_driver_heatmap <- function(drivers, top_n, interactive) {
   return(p)
 }
 
-#' Plot Driver Contributions
+#' Plot Indicator Contributions
 #'
 #' Creates a comprehensive visualization of taxa contributions
 #'
-#' @param drivers Taxa drivers object
+#' @param indicators Taxa indicators object
 #' @param top_n Number of top taxa
 #' @param interactive Use plotly
 #'
 #' @return Contribution plot object
 #' @keywords internal
-plot_driver_contributions <- function(drivers, top_n, interactive) {
+plot_indicator_contributions <- function(indicators, top_n, interactive) {
   # Combine data from all components
-  all_drivers <- list()
+  all_indicators <- list()
   common_cols <- c("taxon", "contribution", "rank", "component")
   
   components <- c("richness", "evenness", "phylogenetic", "spatial")
   for (comp in components) {
-    comp_name <- paste0(comp, "_drivers")
-    if (!is.null(drivers[[comp_name]]) && nrow(drivers[[comp_name]]) > 0) {
-      driver_df <- head(drivers[[comp_name]], top_n)
+    comp_name <- paste0(comp, "_indicators")
+    if (!is.null(indicators[[comp_name]]) && nrow(indicators[[comp_name]]) > 0) {
+      indicator_df <- head(indicators[[comp_name]], top_n)
       # Extract only common columns and add component
-      driver_df_common <- driver_df[, c("taxon", "contribution", "rank")]
-      driver_df_common$component <- comp
-      all_drivers[[comp]] <- driver_df_common
+      indicator_df_common <- indicator_df[, c("taxon", "contribution", "rank")]
+      indicator_df_common$component <- comp
+      all_indicators[[comp]] <- indicator_df_common
     }
   }
   
-  combined_drivers <- do.call(rbind, all_drivers)
+  combined_indicators <- do.call(rbind, all_indicators)
   
   # Calculate summary statistics per taxon
   taxon_summary <- aggregate(contribution ~ taxon,
-                           data = combined_drivers,
+                           data = combined_indicators,
                            FUN = function(x) c(mean = mean(x),
                                              sum = sum(x),
                                              n = length(x)))
@@ -276,7 +276,7 @@ plot_driver_contributions <- function(drivers, top_n, interactive) {
       )
     ) %>%
       plotly::layout(
-        title = "Taxa Driver Contribution Summary",
+        title = "Taxa Indicator Contribution Summary",
         xaxis = list(title = "Mean Contribution per Component"),
         yaxis = list(title = "Total Contribution Across Components")
       )
@@ -293,7 +293,7 @@ plot_driver_contributions <- function(drivers, top_n, interactive) {
       ggplot2::geom_text(vjust = -0.5, size = 3) +
       ggplot2::scale_size_continuous(range = c(3, 10)) +
       ggplot2::scale_color_viridis_c() +
-      ggplot2::labs(title = "Taxa Driver Contribution Summary",
+      ggplot2::labs(title = "Taxa Indicator Contribution Summary",
                    x = "Mean Contribution per Component",
                    y = "Total Contribution Across Components",
                    size = "# Components",
@@ -304,11 +304,11 @@ plot_driver_contributions <- function(drivers, top_n, interactive) {
   return(p)
 }
 
-#' Create Taxa Driver Report
+#' Create Taxa Indicator Report
 #'
-#' Generates a comprehensive HTML report of taxa driver analysis
+#' Generates a comprehensive HTML report of taxa indicator analysis
 #'
-#' @param drivers Taxa drivers object
+#' @param indicators Taxa indicators object
 #' @param physeq Original phyloseq object
 #' @param output_file Output HTML file path
 #' @param title Report title
@@ -317,13 +317,13 @@ plot_driver_contributions <- function(drivers, top_n, interactive) {
 #' @export
 #' @examples
 #' \dontrun{
-#' # Generate taxa driver report
-#' report_taxa_drivers(drivers, physeq, "taxa_drivers_report.html")
+#' # Generate taxa indicator report
+#' report_taxa_indicators(indicators, physeq, "taxa_indicators_report.html")
 #' }
-report_taxa_drivers <- function(drivers, 
+report_taxa_indicators <- function(indicators, 
                                physeq,
-                               output_file = "taxa_drivers_report.html",
-                               title = "Taxa Driver Analysis Report") {
+                               output_file = "taxa_indicators_report.html",
+                               title = "Taxa Indicator Analysis Report") {
   
   # Create temporary Rmd file
   temp_rmd <- tempfile(fileext = ".Rmd")
@@ -350,9 +350,9 @@ library(DT)
 
 # Overview
 
-This report presents the results of taxa driver analysis, identifying which taxa contribute most to each information component (Richness, Evenness, Phylogenetic, and Spatial) in the diversity patterns.
+This report presents the results of taxa indicator analysis, identifying which taxa serve as indicators for each information component (Richness, Evenness, Phylogenetic, and Spatial) in the diversity patterns.
 
-**Analysis method:** `r drivers$method`
+**Analysis method:** `r indicators$method`
 
 # Summary Statistics
 
@@ -361,17 +361,17 @@ This report presents the results of taxa driver analysis, identifying which taxa
 summary_df <- data.frame(
   Component = c("Richness", "Evenness", "Phylogenetic", "Spatial"),
   Top_Taxon = sapply(c("richness", "evenness", "phylogenetic", "spatial"), function(comp) {
-    comp_name <- paste0(comp, "_drivers")
-    if (!is.null(drivers[[comp_name]]) && nrow(drivers[[comp_name]]) > 0) {
-      drivers[[comp_name]]$taxon[1]
+    comp_name <- paste0(comp, "_indicators")
+    if (!is.null(indicators[[comp_name]]) && nrow(indicators[[comp_name]]) > 0) {
+      indicators[[comp_name]]$taxon[1]
     } else {
       "N/A"
     }
   }),
   Top_Contribution = sapply(c("richness", "evenness", "phylogenetic", "spatial"), function(comp) {
-    comp_name <- paste0(comp, "_drivers")
-    if (!is.null(drivers[[comp_name]]) && nrow(drivers[[comp_name]]) > 0) {
-      round(drivers[[comp_name]]$contribution[1], 3)
+    comp_name <- paste0(comp, "_indicators")
+    if (!is.null(indicators[[comp_name]]) && nrow(indicators[[comp_name]]) > 0) {
+      round(indicators[[comp_name]]$contribution[1], 3)
     } else {
       NA
     }
@@ -382,59 +382,59 @@ summary_df <- data.frame(
 DT::datatable(summary_df, options = list(pageLength = 4, dom = "t"))
 ```
 
-**Total unique driver taxa:** `r drivers$summary$overall$total_unique_drivers`
+**Total unique indicator taxa:** `r indicators$summary$overall$total_unique_indicators`
 
-**Taxa driving multiple components:** `r drivers$summary$overall$n_multi_component`
+**Taxa indicating multiple components:** `r indicators$summary$overall$n_multi_component`
 
-# Component-Specific Drivers
+# Component-Specific Indicators
 
-## Richness Drivers
+## Richness Indicators
 
-Taxa that contribute most to species richness patterns:
+Taxa that serve as indicators for species richness patterns:
 
 ```{r richness-table}
-if (!is.null(drivers$richness_drivers)) {
-  DT::datatable(drivers$richness_drivers[, c("taxon", "contribution", "presence_frequency", "mean_abundance")],
+if (!is.null(indicators$richness_indicators)) {
+  DT::datatable(indicators$richness_indicators[, c("taxon", "contribution", "presence_frequency", "mean_abundance")],
                 options = list(pageLength = 10)) %%>%%
     DT::formatRound(columns = c("contribution", "presence_frequency", "mean_abundance"), digits = 3)
 }
 ```
 
-## Evenness Drivers
+## Evenness Indicators
 
-Taxa that contribute most to community evenness patterns:
+Taxa that serve as indicators for community evenness patterns:
 
 ```{r evenness-table}
-if (!is.null(drivers$evenness_drivers)) {
-  DT::datatable(drivers$evenness_drivers[, c("taxon", "contribution", "mean_relative_abundance", "cv_relative_abundance")],
+if (!is.null(indicators$evenness_indicators)) {
+  DT::datatable(indicators$evenness_indicators[, c("taxon", "contribution", "mean_relative_abundance", "cv_relative_abundance")],
                 options = list(pageLength = 10)) %%>%%
     DT::formatRound(columns = c("contribution", "mean_relative_abundance", "cv_relative_abundance"), digits = 3)
 }
 ```
 
-## Phylogenetic Drivers
+## Phylogenetic Indicators
 
-Taxa that contribute most to phylogenetic diversity patterns:
+Taxa that serve as indicators for phylogenetic diversity patterns:
 
 ```{r phylogenetic-table}
-if (!is.null(drivers$phylogenetic_drivers)) {
+if (!is.null(indicators$phylogenetic_indicators)) {
   cols <- c("taxon", "contribution")
-  if ("phylogenetic_uniqueness" %%in%% names(drivers$phylogenetic_drivers)) {
+  if ("phylogenetic_uniqueness" %%in%% names(indicators$phylogenetic_indicators)) {
     cols <- c(cols, "phylogenetic_uniqueness")
   }
-  DT::datatable(drivers$phylogenetic_drivers[, cols],
+  DT::datatable(indicators$phylogenetic_indicators[, cols],
                 options = list(pageLength = 10)) %%>%%
     DT::formatRound(columns = setdiff(cols, "taxon"), digits = 3)
 }
 ```
 
-## Spatial Drivers
+## Spatial Indicators
 
-Taxa that contribute most to spatial heterogeneity:
+Taxa that serve as indicators for spatial heterogeneity:
 
 ```{r spatial-table}
-if (!is.null(drivers$spatial_drivers)) {
-  DT::datatable(drivers$spatial_drivers[, c("taxon", "contribution", "dispersion_index", "occupancy")],
+if (!is.null(indicators$spatial_indicators)) {
+  DT::datatable(indicators$spatial_indicators[, c("taxon", "contribution", "dispersion_index", "occupancy")],
                 options = list(pageLength = 10)) %%>%%
     DT::formatRound(columns = c("contribution", "dispersion_index", "occupancy"), digits = 3)
 }
@@ -442,28 +442,28 @@ if (!is.null(drivers$spatial_drivers)) {
 
 # Visualizations
 
-## Driver Contributions by Component
+## Indicator Contributions by Component
 
 ```{r bar-plot, fig.height=8}
-plot(drivers, type = "bar", top_n = 10, interactive = TRUE)
+plot(indicators, type = "bar", top_n = 10, interactive = TRUE)
 ```
 
 ## Taxa-Component Network
 
 ```{r network-plot}
-plot(drivers, type = "network", top_n = 10, interactive = TRUE)
+plot(indicators, type = "network", top_n = 10, interactive = TRUE)
 ```
 
 ## Contribution Heatmap
 
 ```{r heatmap}
-plot(drivers, type = "heatmap", top_n = 15, interactive = TRUE)
+plot(indicators, type = "heatmap", top_n = 15, interactive = TRUE)
 ```
 
-## Multi-Component Drivers
+## Multi-Component Indicators
 
-```{r multi-drivers}
-plot(drivers, type = "contribution", top_n = 20, interactive = TRUE)
+```{r multi-indicators}
+plot(indicators, type = "contribution", top_n = 20, interactive = TRUE)
 ```
 
 # Session Information
@@ -484,6 +484,6 @@ sessionInfo()
   # Clean up
   unlink(temp_rmd)
   
-  message("Taxa driver report generated: ", output_file)
+  message("Taxa indicator report generated: ", output_file)
   return(output_file)
 }

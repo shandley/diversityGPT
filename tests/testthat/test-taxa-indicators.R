@@ -11,12 +11,12 @@ test_that("identify_taxa_drivers works with basic inputs", {
                    "phylogenetic_drivers", "spatial_drivers") %in% names(drivers)))
   
   # Check each component has correct structure
-  for (comp in c("richness_drivers", "evenness_drivers", 
-                 "phylogenetic_drivers", "spatial_drivers")) {
-    expect_true(is.data.frame(drivers[[comp]]))
+  for (comp in c("richness_indicators", "evenness_indicators", 
+                 "phylogenetic_indicators", "spatial_indicators")) {
+    expect_true(is.data.frame(indicators[[comp]]))
     expect_true(all(c("taxon", "contribution", "rank", "component") %in% 
-                   names(drivers[[comp]])))
-    expect_equal(nrow(drivers[[comp]]), 5)  # top_n = 5
+                   names(indicators[[comp]])))
+    expect_equal(nrow(indicators[[comp]]), 5)  # top_n = 5
   }
   
   # Check summary

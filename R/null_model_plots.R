@@ -17,7 +17,7 @@ NULL
 #' @keywords internal
 plot_validation_pvalues <- function(validated, component, alpha = 0.05) {
   
-  comp_name <- paste0(component, "_drivers")
+  comp_name <- paste0(component, "_indicators")
   
   if (is.null(validated$observed[[comp_name]]) || 
       !"p_value" %in% names(validated$observed[[comp_name]])) {
@@ -62,7 +62,7 @@ plot_validation_pvalues <- function(validated, component, alpha = 0.05) {
 #' @keywords internal
 plot_validation_effects <- function(validated, component) {
   
-  comp_name <- paste0(component, "_drivers")
+  comp_name <- paste0(component, "_indicators")
   
   if (is.null(validated$observed[[comp_name]]) || 
       !"effect_size" %in% names(validated$observed[[comp_name]])) {
@@ -117,7 +117,7 @@ plot_validation_effects <- function(validated, component) {
 #' @keywords internal
 plot_null_distributions <- function(validated, component, top_n = 6) {
   
-  comp_name <- paste0(component, "_drivers")
+  comp_name <- paste0(component, "_indicators")
   
   if (is.null(validated$observed[[comp_name]])) {
     stop("No data found for ", component, " component")
