@@ -328,18 +328,34 @@ llm_multi_step_analysis <- function(universal_info,
 # Helper functions for creating summaries and prompts
 .create_pattern_summary <- function(components, transformation_matrix, quality_metrics) {
   
+  # Handle different column naming conventions
+  if ("R_component" %in% names(components)) {
+    R_values <- components$R_component
+    E_values <- components$E_component
+  } else {
+    R_values <- components$R
+    E_values <- components$E
+  }
+  
+  # Handle transformation matrix structure
+  if (is.data.frame(transformation_matrix)) {
+    trans_quality <- mean(transformation_matrix$r_squared, na.rm = TRUE)
+  } else {
+    trans_quality <- mean(diag(transformation_matrix), na.rm = TRUE)
+  }
+  
   summary <- list(
     component_stats = list(
-      R_mean = mean(components$R, na.rm = TRUE),
-      R_var = var(components$R, na.rm = TRUE),
-      E_mean = mean(components$E, na.rm = TRUE),
-      E_var = var(components$E, na.rm = TRUE),
-      component_correlation = cor(components$R, components$E, use = "complete.obs")
+      R_mean = mean(R_values, na.rm = TRUE),
+      R_var = var(R_values, na.rm = TRUE),
+      E_mean = mean(E_values, na.rm = TRUE),
+      E_var = var(E_values, na.rm = TRUE),
+      component_correlation = cor(R_values, E_values, use = "complete.obs")
     ),
-    transformation_quality = mean(diag(transformation_matrix), na.rm = TRUE),
+    transformation_quality = trans_quality,
     overall_quality = quality_metrics$overall_quality %||% 0.5,
     n_samples = nrow(components),
-    dominant_component = ifelse(mean(components$R, na.rm = TRUE) > mean(components$E, na.rm = TRUE), "Richness", "Evenness")
+    dominant_component = ifelse(mean(R_values, na.rm = TRUE) > mean(E_values, na.rm = TRUE), "Richness", "Evenness")
   )
   
   return(summary)
