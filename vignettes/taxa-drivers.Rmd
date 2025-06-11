@@ -1,8 +1,8 @@
 ---
-title: "Identifying Taxa Driving Information Components"
+title: "Identifying Taxa Indicators of Information Components"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Identifying Taxa Driving Information Components}
+  %\VignetteIndexEntry{Identifying Taxa Indicators of Information Components}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -23,7 +23,9 @@ library(ggplot2)
 
 ## Introduction
 
-One of the most powerful features of diversityGPT is the ability to identify which specific taxa drive the different information components (R, E, P, S) in diversity patterns. This vignette demonstrates how to use the taxa driver analysis to gain biological insights into your microbiome data.
+One of the most powerful features of diversityGPT is the ability to identify which specific taxa serve as indicators of the different information components (R, E, P, S) in diversity patterns. This vignette demonstrates how to use the taxa indicator analysis to gain biological insights into your microbiome data.
+
+**Note**: Version 2.0+ introduces the revolutionary `robust_taxa_indicators()` function that combines multiple mathematical approaches for the most rigorous analysis. See the "Robust Taxa Indicator Analysis" vignette for advanced usage.
 
 ## Understanding Information Components
 

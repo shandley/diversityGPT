@@ -1,0 +1,484 @@
+---
+title: "Robust Taxa Indicator Analysis: The Most Rigorous Approach"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Robust Taxa Indicator Analysis: The Most Rigorous Approach}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 8,
+  fig.height = 6,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+# Introduction
+
+The `robust_taxa_indicators()` function represents the pinnacle of taxa indicator analysis, integrating four complementary mathematical approaches to provide the most statistically rigorous identification of indicator taxa available. This vignette demonstrates how to use this revolutionary framework that combines:
+
+1. **Null Model Validation**: Test against random expectations
+2. **Information Theory**: Quantify taxa-component relationships  
+3. **Game Theory (Shapley Values)**: Fair attribution of contributions
+4. **Bootstrap Uncertainty**: Confidence intervals and stability assessment
+
+# Why Robust Taxa Indicators?
+
+Traditional approaches to identifying "driver" taxa often rely on simple correlation or abundance metrics, which can be misleading. Our robust approach addresses critical issues:
+
+- **Multiple Testing**: Validates findings against null models
+- **Fair Attribution**: Uses game theory for unbiased contribution assessment
+- **Information Content**: Quantifies actual information transfer
+- **Uncertainty Quantification**: Provides confidence intervals
+- **Method Agreement**: Consensus across different mathematical frameworks
+
+# Quick Start
+
+```{r quickstart}
+library(diversityGPT)
+
+# Load example data
+data("GlobalPatterns", package = "phyloseq")
+physeq <- GlobalPatterns
+
+# Subset for demonstration (faster computation)
+physeq_subset <- prune_taxa(taxa_sums(physeq) > 1000, physeq)
+physeq_subset <- prune_samples(sample_sums(physeq_subset) > 5000, physeq_subset)
+
+# Run comprehensive robust analysis
+robust_results <- robust_taxa_indicators(
+  physeq_subset,
+  methods = c("null_models", "mutual_info", "shapley", "bootstrap"),
+  top_n = 10,
+  n_permutations = 99,   # Increase for publication (999+)
+  n_bootstrap = 99,      # Increase for publication (999+)
+  confidence_level = 0.95,
+  verbose = TRUE
+)
+
+# View results
+print(robust_results)
+```
+
+# Step-by-Step Analysis
+
+## Step 1: Data Preparation
+
+First, ensure your data is properly formatted and filtered:
+
+```{r data-prep}
+# Create a well-structured dataset
+set.seed(123)
+demo_physeq <- create_demo_phyloseq(n_samples = 30, n_taxa = 50)
+
+# Add meaningful sample metadata
+sample_data(demo_physeq) <- sample_data(
+  data.frame(
+    condition = rep(c("control", "treatment"), each = 15),
+    timepoint = rep(c("T0", "T1", "T2"), 10),
+    row.names = sample_names(demo_physeq)
+  )
+)
+
+# Filter low-abundance taxa (optional but recommended)
+demo_physeq <- prune_taxa(taxa_sums(demo_physeq) > 10, demo_physeq)
+```
+
+## Step 2: Extract Universal Information Components
+
+Before identifying indicators, extract the mathematical components:
+
+```{r extract-components}
+# Extract R, E, P, S components
+universal_info <- extract_universal_information(demo_physeq)
+
+# These components represent:
+# R = Richness information
+# E = Evenness information  
+# P = Phylogenetic information
+# S = Spatial/sample distribution information
+
+print(universal_info$components_summary)
+```
+
+## Step 3: Run Robust Analysis
+
+Now perform the comprehensive indicator analysis:
+
+```{r robust-analysis}
+# Full robust analysis with all methods
+robust_indicators <- robust_taxa_indicators(
+  demo_physeq,
+  components = universal_info,  # Use pre-extracted components
+  methods = c("null_models", "mutual_info", "shapley", "bootstrap"),
+  top_n = 15,
+  n_permutations = 199,
+  n_bootstrap = 199,
+  confidence_level = 0.95,
+  parallel = FALSE,  # Set TRUE for large datasets
+  seed = 42,
+  verbose = TRUE
+)
+```
+
+## Step 4: Examine Results
+
+### Consensus Indicators
+
+The consensus rankings combine evidence from all methods:
+
+```{r consensus-results}
+# View top richness indicators
+richness_indicators <- robust_indicators$consensus_indicators$richness
+print(head(richness_indicators, 10))
+
+# Interpretation of columns:
+# - consensus_score: Combined evidence across methods (higher = stronger indicator)
+# - n_methods: Number of methods identifying this taxon
+# - reliability: Confidence in this taxon as an indicator (0-1)
+# - final_uncertainty: Uncertainty estimate from bootstrap
+```
+
+### Method Agreement
+
+Check how well different methods agree:
+
+```{r method-agreement}
+# Overall agreement between methods
+cat("Overall method agreement:", 
+    round(robust_indicators$method_agreement$overall$mean_agreement * 100, 1), "%\n")
+
+# Component-specific agreement
+for (comp in c("richness", "evenness", "phylogenetic", "spatial")) {
+  if (!is.null(robust_indicators$method_agreement[[comp]])) {
+    cat(comp, "agreement:", 
+        round(robust_indicators$method_agreement[[comp]]$mean_agreement * 100, 1), "%\n")
+  }
+}
+```
+
+### Reliability Assessment
+
+Understand the confidence in your results:
+
+```{r reliability}
+# Overall reliability score
+cat("Overall reliability score:", 
+    round(robust_indicators$reliability_scores$overall_score, 3), "\n")
+cat("Interpretation:", 
+    robust_indicators$summary_report$reliability$interpretation, "\n")
+
+# Method-specific reliability
+if (!is.null(robust_indicators$reliability_scores$null_models)) {
+  cat("\nNull model significance rates:\n")
+  print(robust_indicators$reliability_scores$null_models$significance_rate)
+}
+```
+
+# Visualization
+
+## Consensus Indicator Plot
+
+```{r plot-consensus, fig.height=8}
+# Plot top consensus indicators for richness
+plot(robust_indicators, 
+     type = "consensus", 
+     component = "richness", 
+     top_n = 10)
+```
+
+## Method Comparison
+
+```{r plot-comparison, fig.height=6}
+# Compare rankings across methods
+plot(robust_indicators, 
+     type = "comparison", 
+     top_n = 8)
+```
+
+## Reliability Visualization
+
+```{r plot-reliability, fig.height=6}
+# Visualize reliability metrics
+plot(robust_indicators, 
+     type = "reliability")
+```
+
+# Understanding Each Method
+
+## 1. Null Model Validation
+
+Tests whether observed indicator values exceed random expectation:
+
+```{r null-model-details}
+# Extract null model results
+null_results <- robust_indicators$null_model_results
+
+# Check p-values for richness indicators
+if (!is.null(null_results)) {
+  richness_pvals <- null_results$p_values$richness
+  significant_taxa <- names(richness_pvals)[richness_pvals < 0.05]
+  
+  cat("Significant richness indicators (p < 0.05):", 
+      length(significant_taxa), "out of", length(richness_pvals), "\n")
+  
+  # Effect sizes for significant taxa
+  if (length(significant_taxa) > 0) {
+    effect_sizes <- null_results$effect_sizes$richness[significant_taxa]
+    cat("Top 5 effect sizes:\n")
+    print(sort(effect_sizes, decreasing = TRUE)[1:5])
+  }
+}
+```
+
+## 2. Mutual Information Analysis
+
+Quantifies information shared between taxa and diversity components:
+
+```{r mutual-info-details}
+# Extract mutual information results
+mi_results <- robust_indicators$mutual_info_results
+
+if (!is.null(mi_results)) {
+  # Total information content
+  cat("Total information by component:\n")
+  print(mi_results$summary_stats$total_information)
+  
+  # Top information-rich taxa for richness
+  top_mi_taxa <- head(mi_results$taxa_rankings$richness, 5)
+  print(top_mi_taxa)
+}
+```
+
+## 3. Shapley Value Attribution
+
+Fair game-theoretic attribution of contributions:
+
+```{r shapley-details}
+# Extract Shapley results
+shapley_results <- robust_indicators$shapley_results
+
+if (!is.null(shapley_results)) {
+  # Check fairness properties
+  cat("Shapley fairness axioms:\n")
+  cat("- Efficiency satisfied:", 
+      all(sapply(shapley_results$fairness_properties, 
+                function(x) x$efficiency$satisfied)), "\n")
+  
+  # Top Shapley contributors
+  shapley_rich <- shapley_results$shapley_matrix[, "richness"]
+  top_shapley <- sort(shapley_rich, decreasing = TRUE)[1:5]
+  cat("\nTop 5 Shapley contributors to richness:\n")
+  print(top_shapley)
+}
+```
+
+## 4. Bootstrap Uncertainty
+
+Confidence intervals and stability assessment:
+
+```{r bootstrap-details}
+# Extract bootstrap results
+boot_results <- robust_indicators$bootstrap_results
+
+if (!is.null(boot_results)) {
+  # Method stability across bootstrap samples
+  cat("Method stability scores:\n")
+  print(boot_results$reliability_assessment$method_stability)
+  
+  # Confidence intervals for top indicators
+  if (!is.null(boot_results$consensus_rankings$richness)) {
+    boot_consensus <- boot_results$consensus_rankings$richness
+    top_5 <- head(boot_consensus, 5)
+    
+    cat("\nTop 5 indicators with 95% confidence intervals:\n")
+    for (i in 1:nrow(top_5)) {
+      cat(sprintf("%s: %.3f [%.3f, %.3f]\n",
+                 top_5$taxon[i],
+                 top_5$mean_rank[i],
+                 top_5$ci_lower[i],
+                 top_5$ci_upper[i]))
+    }
+  }
+}
+```
+
+# Advanced Usage
+
+## Custom Method Selection
+
+Run with specific method combinations:
+
+```{r custom-methods}
+# Only null models and mutual information
+fast_robust <- robust_taxa_indicators(
+  demo_physeq,
+  methods = c("null_models", "mutual_info"),
+  top_n = 10,
+  n_permutations = 99,
+  verbose = FALSE
+)
+
+# Only Shapley values with bootstrap
+shapley_boot <- robust_taxa_indicators(
+  demo_physeq,
+  methods = c("shapley", "bootstrap"),
+  top_n = 8,
+  n_bootstrap = 199,
+  verbose = FALSE
+)
+```
+
+## Parallel Processing
+
+For large datasets, enable parallel processing:
+
+```{r parallel-example, eval=FALSE}
+# Use multiple cores
+library(parallel)
+n_cores <- detectCores() - 1
+
+robust_parallel <- robust_taxa_indicators(
+  large_physeq,
+  methods = c("null_models", "mutual_info", "shapley", "bootstrap"),
+  top_n = 20,
+  n_permutations = 999,
+  n_bootstrap = 999,
+  parallel = TRUE,
+  n_cores = n_cores,
+  verbose = TRUE
+)
+```
+
+## Group-Specific Analysis
+
+Analyze indicators within specific sample groups:
+
+```{r group-analysis}
+# Subset to treatment group only
+treatment_samples <- sample_data(demo_physeq)$condition == "treatment"
+treatment_physeq <- prune_samples(treatment_samples, demo_physeq)
+
+# Find treatment-specific indicators
+treatment_indicators <- robust_taxa_indicators(
+  treatment_physeq,
+  methods = c("null_models", "mutual_info"),
+  top_n = 10,
+  n_permutations = 99,
+  verbose = FALSE
+)
+
+print(treatment_indicators)
+```
+
+# Reporting Results
+
+## Generate Comprehensive Report
+
+```{r report-generation, eval=FALSE}
+# Create HTML report with all results
+report_robust_indicators(
+  robust_indicators,
+  output_file = "robust_indicators_report.html",
+  title = "Comprehensive Taxa Indicator Analysis"
+)
+```
+
+## Export Results
+
+```{r export-results}
+# Export consensus indicators to CSV
+write.csv(
+  robust_indicators$consensus_indicators$richness,
+  "richness_indicators.csv",
+  row.names = FALSE
+)
+
+# Save complete results object
+saveRDS(robust_indicators, "robust_indicators_results.rds")
+```
+
+# Best Practices
+
+## 1. Sample Size Considerations
+- Minimum 20 samples recommended for reliable results
+- More samples improve null model and bootstrap reliability
+
+## 2. Permutation Numbers
+- Development: 99-199 permutations for speed
+- Publication: 999+ permutations for rigor
+- Bootstrap: Match permutation numbers
+
+## 3. Interpreting Results
+- **High consensus + low uncertainty** = Most reliable indicators
+- **Method disagreement** = Potential method-specific biases
+- **Low reliability scores** = Need more data or different approaches
+
+## 4. Computational Resources
+- Small datasets (<100 taxa): All methods feasible
+- Medium datasets (100-1000 taxa): Consider parallel processing
+- Large datasets (>1000 taxa): Use approximation methods for Shapley
+
+# Troubleshooting
+
+## Memory Issues
+
+```{r memory-solutions, eval=FALSE}
+# For large datasets, process in chunks
+taxa_chunks <- split(taxa_names(large_physeq), 
+                    ceiling(seq_along(taxa_names(large_physeq))/100))
+
+chunk_results <- lapply(taxa_chunks, function(chunk) {
+  sub_physeq <- prune_taxa(chunk, large_physeq)
+  robust_taxa_indicators(sub_physeq, methods = "mutual_info", top_n = 10)
+})
+```
+
+## Convergence Issues
+
+```{r convergence-check}
+# Check if bootstrap has converged
+if (!is.null(robust_indicators$bootstrap_results)) {
+  convergence <- robust_indicators$bootstrap_results$convergence_assessment
+  if (!is.null(convergence)) {
+    cat("Bootstrap convergence achieved:", convergence$converged, "\n")
+  }
+}
+```
+
+# Mathematical Details
+
+## Information Theory Foundation
+
+The mutual information between taxon $i$ and component $c$ is:
+
+$$MI(X_i, Y_c) = \sum_{x,y} p(x,y) \log\frac{p(x,y)}{p(x)p(y)}$$
+
+## Shapley Value Calculation
+
+For taxon $i$'s contribution to component $c$:
+
+$$\phi_i = \sum_{S \subseteq N \setminus \{i\}} \frac{|S|!(n-|S|-1)!}{n!}[v(S \cup \{i\}) - v(S)]$$
+
+## Null Model Validation
+
+Effect size calculation:
+
+$$ES_i = \frac{observed_i - mean(null_i)}{sd(null_i)}$$
+
+# Conclusion
+
+The `robust_taxa_indicators()` function provides the most comprehensive and statistically rigorous approach to identifying indicator taxa. By combining multiple mathematical frameworks, it overcomes the limitations of single-method approaches and provides reliable, interpretable results with proper uncertainty quantification.
+
+For questions or issues, please visit: https://github.com/shandley/diversityGPT
+
+# Session Info
+
+```{r session}
+sessionInfo()
+```

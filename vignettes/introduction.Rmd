@@ -30,6 +30,8 @@ diversityGPT revolutionizes microbiome diversity analysis by solving the "metric
 2. **AI-Powered Interpretation**: Understand ecological meaning of patterns
 3. **Consensus Analysis**: Resolve conflicts between metrics
 4. **Interactive Exploration**: Visualize and explore diversity patterns
+5. **Robust Taxa Indicators**: Most rigorous indicator identification available
+6. **Ecological Intelligence**: Detect assembly mechanisms and generate hypotheses
 
 ## Quick Start
 
@@ -138,6 +140,30 @@ consensus <- consensus_diversity(
 # View consensus results
 print(consensus$method_weights)
 ```
+
+## Robust Taxa Indicators
+
+Identify the most important indicator taxa using multiple rigorous mathematical approaches:
+
+```{r robust-indicators}
+# Run comprehensive indicator analysis
+robust_indicators <- robust_taxa_indicators(
+  demo_data,
+  methods = c("null_models", "mutual_info"),  # Quick methods for demo
+  top_n = 5,
+  n_permutations = 49,  # Small for demo
+  verbose = FALSE
+)
+
+# View top richness indicators
+print(robust_indicators$consensus_indicators$richness)
+```
+
+This revolutionary approach combines:
+- **Null Model Validation**: Test against random expectations
+- **Information Theory**: Quantify taxa-component relationships
+- **Game Theory (Shapley Values)**: Fair contribution attribution
+- **Bootstrap Uncertainty**: Confidence intervals
 
 ## Interactive Exploration
 
