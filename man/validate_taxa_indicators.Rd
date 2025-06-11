@@ -17,7 +17,7 @@ validate_taxa_indicators(
 \arguments{
 \item{physeq}{A phyloseq object}
 
-\item{indicators}{Taxa indicators object (from identify_taxa_drivers)}
+\item{indicators}{Taxa indicators object (from identify_taxa_indicators)}
 
 \item{null_models}{Character vector of null models to use:
 "row_shuffle", "column_shuffle", "curveball", "phylogenetic"}
@@ -47,7 +47,7 @@ using multiple null model algorithms.
 demo_data <- create_demo_phyloseq()
 
 # Get indicators
-indicators <- identify_taxa_drivers(demo_data, top_n = 10)
+indicators <- identify_taxa_indicators(demo_data, top_n = 10)
 
 # Validate with null models
 validated <- validate_taxa_indicators(demo_data, indicators, 

@@ -1,0 +1,395 @@
+---
+title: "Ecological Intelligence: From Patterns to Understanding"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Ecological Intelligence: From Patterns to Understanding}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+# Introduction
+
+The diversityGPT package revolutionizes microbiome analysis by combining rigorous mathematical frameworks with ecological intelligence. This vignette demonstrates how to transform diversity patterns into ecological understanding using our comprehensive suite of tools.
+
+## The Ecological Intelligence Pipeline
+
+Our ecological intelligence features follow a logical workflow:
+
+1. **Pattern Detection**: Extract universal information components (R, E, P, S)
+2. **Mechanism Identification**: Detect assembly processes driving community structure
+3. **Hypothesis Generation**: Create testable predictions about ecological processes
+4. **Literature Integration**: Connect findings to existing knowledge
+5. **AI-Powered Synthesis**: Generate comprehensive ecological insights
+
+# Quick Start: Complete Workflow
+
+```{r quick-start, eval=FALSE}
+library(diversityGPT)
+
+# Load your microbiome data
+data("GlobalPatterns") # Example dataset
+physeq <- GlobalPatterns
+
+# Run complete ecological intelligence analysis
+eco_intelligence <- run_ecological_intelligence(
+  physeq,
+  environmental_data = sample_data(physeq),
+  study_context = list(
+    environment = "soil_microbiome",
+    research_question = "What drives microbial diversity in different soil types?"
+  )
+)
+
+# View comprehensive results
+print(eco_intelligence)
+```
+
+# Step-by-Step Analysis
+
+## Step 1: Extract Universal Information Components
+
+First, we decompose diversity into its fundamental components:
+
+```{r extract-components}
+library(diversityGPT)
+
+# Create example data with environmental gradients
+set.seed(123)
+demo_data <- create_demo_phyloseq(n_samples = 30, n_taxa = 50)
+
+# Add environmental data
+env_data <- data.frame(
+  pH = rnorm(30, mean = 6.5, sd = 1),
+  temperature = rnorm(30, mean = 25, sd = 5),
+  moisture = runif(30, min = 10, max = 90)
+)
+sample_data(demo_data) <- sample_data(env_data)
+
+# Extract universal components
+universal_info <- extract_universal_information(demo_data)
+print(universal_info)
+
+# Visualize components
+plot(universal_info, type = "components")
+```
+
+## Step 2: Detect Assembly Mechanisms
+
+Identify the ecological processes shaping your community:
+
+```{r detect-mechanisms}
+# Detect assembly mechanisms
+mechanisms <- detect_assembly_mechanisms(
+  universal_info,
+  environmental_data = env_data,
+  detect_methods = c("environmental_filtering", "competitive_exclusion", 
+                    "neutral_drift", "dispersal_limitation")
+)
+
+print(mechanisms)
+
+# Which mechanisms are significant?
+significant_mechanisms <- get_significant_mechanisms(mechanisms)
+```
+
+## Step 3: Generate Testable Hypotheses
+
+Transform patterns into scientific hypotheses:
+
+```{r generate-hypotheses}
+# Generate ecological hypotheses
+hypotheses <- generate_ecological_hypotheses(
+  patterns = list(diversity = universal_info, assembly = mechanisms),
+  study_context = list(
+    environment = "soil_microbiome",
+    organism = "bacteria",
+    temporal_scale = "seasonal",
+    spatial_scale = "landscape"
+  ),
+  hypothesis_types = c("mechanistic", "predictive", "experimental"),
+  n_hypotheses = 5
+)
+
+# View top hypotheses
+print_top_hypotheses(hypotheses, n = 3)
+```
+
+## Step 4: Search and Integrate Literature
+
+Connect your findings to existing knowledge:
+
+```{r literature-search}
+# Search relevant literature
+literature <- search_literature(
+  query = "soil microbiome pH temperature assembly",
+  databases = c("pubmed", "crossref"),
+  max_results = 20,
+  filter_criteria = list(
+    year_min = 2020,
+    relevance_threshold = 0.6
+  )
+)
+
+# View relevant papers
+print(literature)
+
+# Identify research gaps
+gaps <- identify_research_gaps(literature, hypotheses)
+```
+
+## Step 5: AI-Powered Synthesis (Optional)
+
+If you have configured an LLM API, get comprehensive ecological insights:
+
+```{r llm-analysis, eval=FALSE}
+# Configure LLM (only needed once)
+configure_llm(
+  provider = "anthropic",  # or "openai"
+  api_key = "your-api-key"
+)
+
+# Run multi-step analysis
+ai_insights <- llm_multi_step_analysis(
+  data = list(
+    diversity = universal_info,
+    mechanisms = mechanisms,
+    hypotheses = hypotheses,
+    literature = literature
+  ),
+  context = list(
+    study_system = "soil microbiome",
+    research_question = "How do pH and temperature interact to structure soil bacterial communities?",
+    expertise_level = "expert"
+  ),
+  reasoning_depth = "deep"
+)
+
+# View AI insights
+cat(ai_insights$synthesis)
+```
+
+# Real-World Case Studies
+
+## Case Study 1: Environmental Filtering in Extreme Environments
+
+```{r case-study-1}
+# Simulate extreme environment data
+extreme_data <- create_demo_phyloseq(n_samples = 20, n_taxa = 30)
+
+# Add extreme environmental gradients
+extreme_env <- data.frame(
+  pH = c(rep(3, 10), rep(9, 10)),  # Extreme pH
+  temperature = c(rep(5, 10), rep(45, 10)),  # Extreme temperatures
+  site = factor(c(rep("acidic_cold", 10), rep("alkaline_hot", 10)))
+)
+sample_data(extreme_data) <- sample_data(extreme_env)
+
+# Analyze assembly mechanisms
+extreme_universal <- extract_universal_information(extreme_data)
+extreme_mechanisms <- detect_assembly_mechanisms(
+  extreme_universal,
+  environmental_data = extreme_env[, c("pH", "temperature")]
+)
+
+# Results show strong environmental filtering
+print(extreme_mechanisms)
+```
+
+## Case Study 2: Competitive Exclusion in Nutrient-Rich Environments
+
+```{r case-study-2}
+# Simulate competitive environment
+competitive_data <- create_demo_phyloseq(n_samples = 25, n_taxa = 40)
+
+# High richness, low evenness pattern (competitive exclusion signature)
+otu_table(competitive_data)[1:5, ] <- otu_table(competitive_data)[1:5, ] * 10
+
+# Analyze patterns
+competitive_universal <- extract_universal_information(competitive_data)
+competitive_mechanisms <- detect_assembly_mechanisms(competitive_universal)
+
+# Generate hypotheses about competition
+competitive_hypotheses <- generate_ecological_hypotheses(
+  patterns = list(diversity = competitive_universal),
+  study_context = list(
+    environment = "nutrient_rich",
+    expected_process = "competition"
+  )
+)
+
+print(competitive_hypotheses)
+```
+
+# Advanced Features
+
+## Custom Assembly Mechanism Detection
+
+You can define custom assembly mechanisms:
+
+```{r custom-mechanisms, eval=FALSE}
+# Define custom mechanism detector
+custom_detector <- function(universal_info, env_data) {
+  # Your custom logic here
+  # Return detection result with confidence
+}
+
+# Add to detection
+mechanisms <- detect_assembly_mechanisms(
+  universal_info,
+  custom_detectors = list(
+    my_mechanism = custom_detector
+  )
+)
+```
+
+## Hypothesis Testing Framework
+
+Test generated hypotheses with your data:
+
+```{r hypothesis-testing, eval=FALSE}
+# Select hypothesis to test
+test_hypothesis <- hypotheses$hypotheses[[1]]
+
+# Design experiment
+experiment <- design_experiment(
+  hypothesis = test_hypothesis,
+  current_data = demo_data,
+  feasibility_constraints = list(
+    max_samples = 50,
+    time_points = 5
+  )
+)
+
+# Evaluate hypothesis with new data
+results <- test_ecological_hypothesis(
+  hypothesis = test_hypothesis,
+  test_data = new_data,
+  statistical_tests = c("permanova", "correlation")
+)
+```
+
+# Visualization Gallery
+
+## Assembly Mechanism Summary
+
+```{r viz-mechanisms, fig.height=6}
+# Create mechanism summary plot
+plot_mechanism_summary <- function(mechanisms) {
+  # Extract confidence scores
+  mech_data <- data.frame(
+    mechanism = names(mechanisms$mechanisms),
+    confidence = sapply(mechanisms$mechanisms, function(x) x$confidence),
+    detected = sapply(mechanisms$mechanisms, function(x) x$detected)
+  )
+  
+  # Create bar plot
+  library(ggplot2)
+  ggplot(mech_data, aes(x = mechanism, y = confidence, fill = detected)) +
+    geom_bar(stat = "identity") +
+    scale_fill_manual(values = c("FALSE" = "gray", "TRUE" = "darkgreen")) +
+    coord_flip() +
+    theme_minimal() +
+    labs(title = "Assembly Mechanism Detection",
+         x = "Mechanism",
+         y = "Confidence Score")
+}
+
+# Plot if mechanisms exist
+if (exists("mechanisms")) {
+  plot_mechanism_summary(mechanisms)
+}
+```
+
+## Hypothesis Network
+
+```{r viz-hypotheses, fig.height=7}
+# Visualize hypothesis relationships
+if (exists("hypotheses") && length(hypotheses$hypotheses) > 0) {
+  plot(hypotheses, type = "network")
+}
+```
+
+# Best Practices
+
+## 1. Start with Quality Data
+- Ensure adequate sampling depth
+- Include relevant environmental metadata
+- Use appropriate controls
+
+## 2. Validate Mechanisms
+- Use multiple detection methods
+- Check consistency across subsets
+- Compare with literature expectations
+
+## 3. Prioritize Hypotheses
+- Focus on testable predictions
+- Consider feasibility constraints
+- Build on existing knowledge
+
+## 4. Iterate and Refine
+- Test initial hypotheses
+- Update understanding
+- Generate new predictions
+
+# Troubleshooting
+
+## Common Issues
+
+**No mechanisms detected:**
+```{r troubleshoot-1, eval=FALSE}
+# Check data properties
+check_data_properties(universal_info)
+
+# Lower confidence threshold
+mechanisms <- detect_assembly_mechanisms(
+  universal_info,
+  confidence_threshold = 0.5  # Default is 0.7
+)
+```
+
+**Poor hypothesis quality:**
+```{r troubleshoot-2, eval=FALSE}
+# Provide more context
+hypotheses <- generate_ecological_hypotheses(
+  patterns = patterns,
+  study_context = list(
+    environment = "specific_ecosystem",
+    organism = "target_taxa",
+    known_drivers = c("temperature", "pH"),
+    research_goals = "understand seasonal variation"
+  )
+)
+```
+
+# Conclusion
+
+The ecological intelligence features in diversityGPT provide a complete pipeline from pattern detection to ecological understanding. By combining rigorous mathematical frameworks with ecological theory and AI assistance, researchers can:
+
+1. Identify assembly mechanisms with statistical confidence
+2. Generate testable hypotheses automatically
+3. Connect findings to existing literature
+4. Synthesize comprehensive ecological insights
+
+This transforms microbiome analysis from descriptive statistics to mechanistic understanding, accelerating scientific discovery.
+
+# Further Reading
+
+- Assembly Mechanisms: See `?detect_assembly_mechanisms` for details
+- Hypothesis Generation: See `?generate_ecological_hypotheses` for options
+- Literature Integration: See `?search_literature` for database options
+- Universal Information: See `vignette("universal_information_theory")`
+
+# Session Info
+
+```{r session}
+sessionInfo()
+```
