@@ -218,20 +218,23 @@ estimate_information_components <- function(source_df, transformation_matrix) {
       sample_ids <- paste0("sample_", 1:n_samples)
     }
     
+    # Return NA values instead of hardcoded equal components
+    # This makes it clear that components cannot be estimated
     result <- data.frame(
       sample_id = sample_ids,
-      R_component = rep(0.25, n_samples),
-      E_component = rep(0.25, n_samples), 
-      P_component = rep(0.25, n_samples),
-      S_component = rep(0.25, n_samples),
-      total_information = rep(1.0, n_samples),
-      R_proportion = rep(0.25, n_samples),
-      E_proportion = rep(0.25, n_samples),
-      P_proportion = rep(0.25, n_samples),
-      S_proportion = rep(0.25, n_samples),
+      R_component = rep(NA_real_, n_samples),
+      E_component = rep(NA_real_, n_samples), 
+      P_component = rep(NA_real_, n_samples),
+      S_component = rep(NA_real_, n_samples),
+      total_information = rep(NA_real_, n_samples),
+      R_proportion = rep(NA_real_, n_samples),
+      E_proportion = rep(NA_real_, n_samples),
+      P_proportion = rep(NA_real_, n_samples),
+      S_proportion = rep(NA_real_, n_samples),
       stringsAsFactors = FALSE
     )
     
+    cli::cli_warn("Cannot estimate components from available metrics. Returning NA values.")
     return(result)
   }
   

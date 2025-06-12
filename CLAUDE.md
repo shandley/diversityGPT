@@ -108,6 +108,39 @@
 - Comprehensive documentation with examples
 - Vignettes for common workflows
 
+### CRITICAL: No Hardcoded Values or Synthetic Data Policy
+**⚠️ IMPORTANT**: This package must NEVER use placeholder calculations or hardcoded values in production code.
+
+#### Strict Rules:
+1. **NO placeholder calculations** - Never implement simplified versions that ignore actual mathematics
+   - ❌ BAD: `faith_pd <- sum(x > 0)` (counts species instead of phylogenetic diversity)
+   - ✅ GOOD: `faith_pd <- picante::pd(otu_mat, tree)$PD` or return NA
+
+2. **NO hardcoded defaults** - Never return fixed values when calculations fail
+   - ❌ BAD: `R_component <- rep(0.25, n_samples)` (fake equal contributions)
+   - ✅ GOOD: `R_component <- rep(NA_real_, n_samples)` with informative warning
+
+3. **NO synthetic test data in functions** - Never use rnorm() or runif() to generate fake results
+   - ❌ BAD: `comp_values <- rnorm(n, mean = 0.5, sd = 0.1)` 
+   - ✅ GOOD: Extract from actual data or return NA
+
+4. **ALWAYS validate calculations** - Test against known implementations
+   - Verify Faith's PD differs from species richness
+   - Check that components show realistic variation
+   - Ensure p-values come from actual statistical tests
+
+#### When You Cannot Calculate:
+- Return NA values (not zeros or arbitrary numbers)
+- Provide clear warning messages using `cli::cli_warn()`
+- Document what is needed for proper calculation
+- Suggest installing required packages
+
+#### Testing Guidelines:
+- Use real ecological data for testing (not just simulated)
+- Include tests that detect hardcoded values
+- Verify variation in results across samples
+- Check edge cases return NA, not placeholders
+
 ### Code Organization
 ```
 diversityGPT/
@@ -429,8 +462,21 @@ plot(transformation_results)  # Shows predictions with confidence
 
 ## 🚀 **NEXT FRONTIER: BETA DIVERSITY EXTENSION**
 
-### Revolutionary Beta Diversity Framework (Under Development)
-The diversityGPT framework is being extended to handle **beta diversity** (between-sample diversity), creating the world's first universal alpha-beta diversity system:
+### Revolutionary Beta Diversity Framework (Parallel Development - Active)
+The diversityGPT framework is being extended to handle **beta diversity** (between-sample diversity), creating the world's first universal alpha-beta diversity system.
+
+**Development Strategy**: Parallel development approach - beta features are being developed in experimental modules while maintaining stability of core alpha diversity functionality.
+
+#### Access Beta Features:
+```r
+# Enable experimental beta diversity features
+source(system.file("R", "experimental", "beta_diversity_experimental.R", 
+                   package = "diversityGPT"))
+enable_beta_diversity_experimental()
+
+# Now use beta functions
+beta_decomp <- decompose_beta_diversity(sample1, sample2)
+```
 
 #### Current State: Alpha Diversity (Within-Sample)
 ```r
@@ -469,11 +515,32 @@ The diversityGPT framework is being extended to handle **beta diversity** (betwe
    - S_β dominates → Dispersal limitation
 4. **Scale Integration**: Unified alpha-beta-gamma diversity analysis
 
+#### Implementation Status (Parallel Development)
+✅ **Completed**:
+- Complete theoretical framework (`docs/beta_diversity_theory.md`)
+- Experimental module structure (`R/experimental/`)
+- Core decomposition functions with bug fixes
+- Enhanced visualization system
+- Comprehensive test suite
+- Validation on real ecological data
+- Integration with existing workflow
+
+🚧 **In Progress**:
+- Performance optimization for large datasets
+- Additional decomposition methods
+- Cross-study meta-analysis tools
+- Publication preparation
+
 #### Implementation Files
+- `R/experimental/beta_diversity_experimental.R`: Module loader and documentation
+- `R/experimental/beta_diversity_core.R`: Core decomposition functions (debugged)
+- `R/experimental/beta_diversity_plots.R`: Advanced visualization tools
+- `tests/testthat/test-beta-diversity-experimental.R`: Comprehensive test suite
+- `demo/demo_beta_diversity_parallel.R`: Working demonstration
+- `validation/validate_beta_framework_large.R`: Large-scale validation
 - `docs/beta_diversity_theory.md`: Complete theoretical framework
-- `R/beta_diversity_decomposition.R`: Functional implementation  
-- `demo_beta_decomposition.R`: Working demonstration
 - `docs/alpha_vs_beta_framework.md`: Comparative analysis
+- `vignettes/beta_diversity_framework.Rmd`: Comprehensive documentation
 
 #### Key Functions (Experimental)
 ```r

@@ -116,28 +116,35 @@ calculate_taxa_mutual_information <- function(physeq,
 #' @keywords internal
 prepare_component_data <- function(components, n_samples) {
   
-  # Extract R, E, P, S values per sample
-  comp_names <- c("richness", "evenness", "phylogenetic", "spatial")
-  
-  # Initialize component matrix
-  comp_matrix <- matrix(0, nrow = n_samples, ncol = length(comp_names))
-  colnames(comp_matrix) <- comp_names
-  
-  # Fill with component values
-  # Note: This is a simplified approach - in practice, components would be
-  # calculated per sample from the universal information framework
-  for (i in seq_along(comp_names)) {
-    comp_name <- comp_names[i]
+  # Check if components has information_components data frame
+  if (!is.null(components$information_components)) {
+    # Extract from information_components data frame
+    info_comp <- components$information_components
     
-    # Extract component values (this is a placeholder - actual implementation
-    # would extract per-sample component values from the universal framework)
-    if (comp_name %in% names(components)) {
-      # For now, create synthetic component values
-      # In the full implementation, these would come from per-sample calculations
-      comp_matrix[, i] <- rnorm(n_samples, mean = 0.5, sd = 0.1)
+    # Initialize component matrix
+    comp_matrix <- matrix(0, nrow = n_samples, ncol = 4)
+    colnames(comp_matrix) <- c("richness", "evenness", "phylogenetic", "spatial")
+    
+    # Match samples and extract component values
+    if (nrow(info_comp) == n_samples) {
+      comp_matrix[, "richness"] <- info_comp$R_component
+      comp_matrix[, "evenness"] <- info_comp$E_component
+      comp_matrix[, "phylogenetic"] <- if ("P_component" %in% names(info_comp)) info_comp$P_component else rep(0, n_samples)
+      comp_matrix[, "spatial"] <- if ("S_component" %in% names(info_comp)) info_comp$S_component else rep(0, n_samples)
     } else {
-      comp_matrix[, i] <- rnorm(n_samples, mean = 0.5, sd = 0.1)
+      cli::cli_warn("Sample mismatch in information components. Using NA values.")
+      comp_matrix[] <- NA_real_
     }
+    
+  } else {
+    # Legacy code path - look for individual component vectors
+    comp_names <- c("richness", "evenness", "phylogenetic", "spatial")
+    comp_matrix <- matrix(0, nrow = n_samples, ncol = length(comp_names))
+    colnames(comp_matrix) <- comp_names
+    
+    # Fill with NA values since we don't have the data
+    comp_matrix[] <- NA_real_
+    cli::cli_warn("Information components not found in expected format. Using NA values.")
   }
   
   return(comp_matrix)

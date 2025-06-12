@@ -90,14 +90,22 @@ calculate_diversity <- function(physeq,
       
     } else if (metric == "faith_pd") {
       # Calculate Faith's phylogenetic diversity
-      # This is a simplified version - in production you'd use picante::pd
       otu_mat <- as.matrix(phyloseq::otu_table(physeq))
       if (phyloseq::taxa_are_rows(physeq)) {
         otu_mat <- t(otu_mat)
       }
-      values <- apply(otu_mat, 1, function(x) {
-        sum(x > 0)  # Placeholder - would calculate actual PD
-      })
+      
+      # Check if picante is available
+      if (requireNamespace("picante", quietly = TRUE)) {
+        # Use picante::pd for proper Faith's PD calculation
+        tree <- phyloseq::phy_tree(physeq)
+        pd_result <- picante::pd(otu_mat, tree, include.root = FALSE)
+        values <- pd_result$PD
+      } else {
+        # If picante not available, use dependency check function
+        check_function_dependencies("faith_pd")
+        values <- rep(NA, nrow(otu_mat))
+      }
     }
     
     results[[metric]] <- values

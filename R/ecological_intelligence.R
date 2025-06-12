@@ -196,7 +196,12 @@ detect_assembly_mechanisms <- function(universal_info,
       if (!is.na(max_corr) && max_corr > 0.5) {
         # Strong environmental correlation suggests filtering
         mechanism_data$confidence <- max_corr
-        mechanism_data$p_value <- 0.01  # Simplified for now
+        # Calculate actual p-value from correlation test
+        mechanism_data$p_value <- if (!is.null(correlations[[1]]$p_value)) {
+          correlations[[1]]$p_value
+        } else {
+          NA_real_  # Return NA if p-value not available
+        }
         mechanism_data$effect_size <- max_corr
         
         # Find which variable had strongest correlation
