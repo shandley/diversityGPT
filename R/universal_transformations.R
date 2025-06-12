@@ -57,13 +57,16 @@ universal_diversity_transform <- function(source_metrics,
     )
   } else {
     source_df <- as.data.frame(source_metrics)
+    # Ensure we don't modify the original column order
     # Add sample_id if not present
     if (!"sample_id" %in% names(source_df)) {
       if (!is.null(rownames(source_df)) && !all(rownames(source_df) == as.character(1:nrow(source_df)))) {
-        source_df$sample_id <- rownames(source_df)
+        sample_ids <- rownames(source_df)
       } else {
-        source_df$sample_id <- paste0("sample_", 1:nrow(source_df))
+        sample_ids <- paste0("sample_", 1:nrow(source_df))
       }
+      # Add sample_id as first column
+      source_df <- cbind(data.frame(sample_id = sample_ids, stringsAsFactors = FALSE), source_df)
     }
   }
   
@@ -201,25 +204,31 @@ estimate_information_components <- function(source_df, transformation_matrix) {
     
     # Return default/neutral information components
     # Get sample IDs
+    n_samples <- nrow(source_df)
+    if (n_samples == 0) {
+      cli::cli_abort("Source metrics data frame is empty")
+    }
+    
     if ("sample_id" %in% names(source_df)) {
       sample_ids <- source_df$sample_id
-    } else if (!is.null(rownames(source_df))) {
+    } else if (!is.null(rownames(source_df)) && 
+               !all(rownames(source_df) == as.character(1:n_samples))) {
       sample_ids <- rownames(source_df)
     } else {
-      sample_ids <- paste0("sample_", 1:nrow(source_df))
+      sample_ids <- paste0("sample_", 1:n_samples)
     }
     
     result <- data.frame(
       sample_id = sample_ids,
-      R_component = rep(0.25, nrow(source_df)),
-      E_component = rep(0.25, nrow(source_df)), 
-      P_component = rep(0.25, nrow(source_df)),
-      S_component = rep(0.25, nrow(source_df)),
-      total_information = rep(1.0, nrow(source_df)),
-      R_proportion = rep(0.25, nrow(source_df)),
-      E_proportion = rep(0.25, nrow(source_df)),
-      P_proportion = rep(0.25, nrow(source_df)),
-      S_proportion = rep(0.25, nrow(source_df)),
+      R_component = rep(0.25, n_samples),
+      E_component = rep(0.25, n_samples), 
+      P_component = rep(0.25, n_samples),
+      S_component = rep(0.25, n_samples),
+      total_information = rep(1.0, n_samples),
+      R_proportion = rep(0.25, n_samples),
+      E_proportion = rep(0.25, n_samples),
+      P_proportion = rep(0.25, n_samples),
+      S_proportion = rep(0.25, n_samples),
       stringsAsFactors = FALSE
     )
     
@@ -256,11 +265,13 @@ estimate_information_components <- function(source_df, transformation_matrix) {
       target_value <- metric_values[i] - coefficients["intercept"]
       
       # Simple heuristic: assign proportional to coefficient magnitudes
-      # Extract only the component coefficients that exist
+      # Extract only the component coefficients that exist and are not NA
       available_coefs <- coefficients[intersect(names(coefficients), component_cols)]
+      # Remove NA values
+      available_coefs <- available_coefs[!is.na(available_coefs)]
       
       if (length(available_coefs) > 0) {
-        total_coef <- sum(abs(available_coefs), na.rm = TRUE)
+        total_coef <- sum(abs(available_coefs))
         
         if (!is.na(total_coef) && total_coef > 0) {
           for (comp in names(available_coefs)) {
@@ -284,7 +295,28 @@ estimate_information_components <- function(source_df, transformation_matrix) {
     }
   }
   
-  # Ensure components are non-negative and normalized
+  # Handle negative components more intelligently
+  # If we have negative components, it suggests extrapolation outside training range
+  # Use absolute values and normalize proportionally
+  for (i in seq_len(nrow(estimated_components))) {
+    row_components <- estimated_components[i, component_cols]
+    
+    if (any(row_components < 0, na.rm = TRUE)) {
+      # Take absolute values and renormalize
+      row_components <- abs(row_components)
+      # Ensure non-zero values
+      if (sum(row_components, na.rm = TRUE) == 0) {
+        # Fallback to equal proportions for non-zero components
+        non_na_comps <- component_cols[!is.na(row_components)]
+        if (length(non_na_comps) > 0) {
+          row_components[non_na_comps] <- 1 / length(non_na_comps)
+        }
+      }
+      estimated_components[i, component_cols] <- row_components
+    }
+  }
+  
+  # Ensure no negative values remain
   estimated_components[estimated_components < 0] <- 0
   
   # Convert to data.frame
@@ -319,6 +351,47 @@ predict_metrics_from_components <- function(estimated_components, target_metrics
   
   transformations <- attr(transformation_matrix, "transformations")
   component_cols <- attr(transformation_matrix, "component_cols")
+  
+  # Default component columns if not specified
+  if (is.null(component_cols)) {
+    component_cols <- c("R_component", "E_component", "P_component", "S_component")
+  }
+  
+  # If transformations attribute is missing, build it from the matrix
+  if (is.null(transformations)) {
+    cli::cli_alert_info("Building transformations from matrix data...")
+    transformations <- list()
+    
+    # Use metric column if rownames are missing
+    if (is.null(rownames(transformation_matrix)) && "metric" %in% names(transformation_matrix)) {
+      rownames(transformation_matrix) <- transformation_matrix$metric
+    }
+    
+    for (metric in rownames(transformation_matrix)) {
+      if (metric %in% target_metrics) {
+        row_data <- transformation_matrix[metric, ]
+        
+        # Extract coefficients from the row
+        coef_names <- c("intercept", "R_component", "E_component", "P_component", "S_component")
+        coefficients <- numeric(length(coef_names))
+        names(coefficients) <- coef_names
+        
+        for (coef_name in coef_names) {
+          if (coef_name %in% names(row_data)) {
+            coefficients[coef_name] <- as.numeric(row_data[[coef_name]])
+          }
+        }
+        
+        transformations[[metric]] <- list(
+          coefficients = coefficients,
+          r_squared = as.numeric(row_data$r_squared),
+          adj_r_squared = as.numeric(row_data$adj_r_squared),
+          rmse = as.numeric(row_data$rmse),
+          n_obs = as.numeric(row_data$n_obs)
+        )
+      }
+    }
+  }
   
   n_samples <- nrow(estimated_components)
   
@@ -363,12 +436,24 @@ predict_metrics_from_components <- function(estimated_components, target_metrics
     # Predict using linear combination
     coefficients <- transform$coefficients
     
-    predicted_values <- rep(coefficients["intercept"], n_samples)
+    # Get intercept value, handle NA
+    intercept_val <- coefficients["intercept"]
+    if (is.na(intercept_val) || is.null(intercept_val)) {
+      intercept_val <- 0
+      cli::cli_alert_warning("Missing intercept for {metric}, using 0")
+    }
+    
+    predicted_values <- rep(intercept_val, n_samples)
     
     for (comp in component_cols) {
       if (comp %in% names(coefficients) && comp %in% names(estimated_components)) {
-        predicted_values <- predicted_values + 
-                          estimated_components[[comp]] * coefficients[comp]
+        coef_val <- coefficients[comp]
+        comp_val <- estimated_components[[comp]]
+        
+        # Only add if both coefficient and component values are not NA
+        if (!is.na(coef_val) && !any(is.na(comp_val))) {
+          predicted_values <- predicted_values + comp_val * coef_val
+        }
       }
     }
     
@@ -377,7 +462,7 @@ predict_metrics_from_components <- function(estimated_components, target_metrics
       predicted_values[predicted_values < 0] <- 0
     }
     
-    predicted_metrics[[metric]] <- predicted_values
+    predicted_metrics[[metric]] <- as.numeric(predicted_values)
     
     prediction_quality <- rbind(prediction_quality, data.frame(
       metric = metric,

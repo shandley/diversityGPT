@@ -7,6 +7,7 @@
 #'
 #' @param diversity_results A diversity_results object from calculate_diversity()
 #' @param method Character string specifying consensus method:
+#'   - "adaptive": Adaptively combines reliability and significance (default)
 #'   - "weighted_mean": Weight by reliability (inverse of CV)
 #'   - "majority_vote": Based on statistical significance patterns
 #'   - "correlation_weighted": Weight by inter-metric correlation
@@ -28,7 +29,7 @@
 #' print(consensus)
 #' }
 consensus_diversity <- function(diversity_results, 
-                              method = c("weighted_mean", "majority_vote", "correlation_weighted"),
+                              method = c("adaptive", "weighted_mean", "majority_vote", "correlation_weighted"),
                               groups = NULL,
                               alpha = 0.05) {
   
@@ -58,6 +59,7 @@ consensus_diversity <- function(diversity_results,
   
   # Calculate consensus based on method
   consensus_result <- switch(method,
+    adaptive = calculate_adaptive_consensus(metric_data, diversity_results, groups, alpha),
     weighted_mean = calculate_weighted_consensus(metric_data, diversity_results, groups, alpha),
     majority_vote = calculate_majority_consensus(metric_data, diversity_results, groups, alpha),
     correlation_weighted = calculate_correlation_consensus(metric_data, diversity_results, groups, alpha)
@@ -199,6 +201,7 @@ analyze_metric_conflicts <- function(metric_data, groups, alpha) {
   results <- data.frame(
     metric = names(metric_data),
     p_value = NA,
+    p_value_formatted = NA,
     significant = NA,
     effect_size = NA,
     stringsAsFactors = FALSE
@@ -242,6 +245,9 @@ analyze_metric_conflicts <- function(metric_data, groups, alpha) {
     }
   }
   
+  # Format p-values for display
+  results$p_value_formatted <- format_p_values(results$p_value)
+  
   # Identify conflicts
   n_significant <- sum(results$significant, na.rm = TRUE)
   n_total <- sum(!is.na(results$significant))
@@ -255,6 +261,79 @@ analyze_metric_conflicts <- function(metric_data, groups, alpha) {
   )
   
   return(conflict_summary)
+}
+
+#' Calculate adaptive consensus
+#' @keywords internal
+calculate_adaptive_consensus <- function(metric_data, diversity_results, groups, alpha) {
+  
+  # Adaptive method: combines reliability and significance weighting
+  # First, calculate reliability weights (like weighted_mean)
+  reliability_weights <- apply(metric_data, 2, function(x) {
+    cv <- sd(x, na.rm = TRUE) / mean(x, na.rm = TRUE)
+    1 / (cv + 0.01)
+  })
+  
+  # If groups provided, also calculate significance weights
+  if (!is.null(groups) && groups %in% names(diversity_results)) {
+    group_var <- diversity_results[[groups]]
+    
+    # Test each metric for group differences
+    metric_pvalues <- sapply(metric_data, function(x) {
+      if (length(unique(group_var)) == 2) {
+        tryCatch({
+          t.test(x ~ group_var)$p.value
+        }, error = function(e) 1.0)
+      } else {
+        tryCatch({
+          summary(aov(x ~ group_var))[[1]][["Pr(>F)"]][1]
+        }, error = function(e) 1.0)
+      }
+    })
+    
+    # Weight by significance
+    significance_weights <- -log10(metric_pvalues + 1e-10)
+    
+    # Combine reliability and significance weights adaptively
+    # If all p-values are non-significant, use only reliability
+    # If some are significant, blend both
+    prop_significant <- sum(metric_pvalues < alpha) / length(metric_pvalues)
+    
+    if (prop_significant > 0) {
+      # Blend weights based on proportion significant
+      combined_weights <- (1 - prop_significant) * reliability_weights + 
+                         prop_significant * significance_weights
+    } else {
+      combined_weights <- reliability_weights
+    }
+  } else {
+    # No groups, use reliability weights only
+    combined_weights <- reliability_weights
+  }
+  
+  # Normalize weights
+  combined_weights <- combined_weights / sum(combined_weights)
+  
+  # Calculate consensus scores
+  consensus_scores <- as.vector(as.matrix(metric_data) %*% combined_weights)
+  names(consensus_scores) <- diversity_results$sample
+  
+  # Analyze conflicts if groups are provided
+  conflict_analysis <- NULL
+  if (!is.null(groups) && groups %in% names(diversity_results)) {
+    conflict_analysis <- analyze_metric_conflicts(metric_data, diversity_results[[groups]], alpha)
+  }
+  
+  # Create interpretation
+  interpretation <- generate_consensus_interpretation(combined_weights, conflict_analysis, "adaptive")
+  
+  return(list(
+    consensus_scores = consensus_scores,
+    method_weights = combined_weights,
+    conflict_analysis = conflict_analysis,
+    interpretation = interpretation,
+    consensus_value = mean(consensus_scores)  # Add mean consensus value
+  ))
 }
 
 #' Generate interpretation of consensus results
@@ -287,12 +366,36 @@ generate_consensus_interpretation <- function(weights, conflict_analysis, method
   
   # Method-specific interpretation
   interpretation$method_note <- switch(method,
+    adaptive = "Adaptively combines reliability and significance for optimal consensus",
     weighted_mean = "Weights based on metric reliability (low variability = high weight)",
     majority_vote = "Weights based on statistical significance strength",
-    correlation_weighted = "Weights based on correlation with other metrics"
+    correlation_weighted = "Weights based on correlation with other metrics",
+    "Unknown method"  # Default fallback
   )
   
   return(interpretation)
+}
+
+#' Format p-values for display
+#' @keywords internal
+format_p_values <- function(p_values) {
+  formatted <- character(length(p_values))
+  
+  for (i in seq_along(p_values)) {
+    if (is.na(p_values[i])) {
+      formatted[i] <- "NA"
+    } else if (p_values[i] < 0.001) {
+      formatted[i] <- "< 0.001"
+    } else if (p_values[i] < 0.01) {
+      formatted[i] <- sprintf("%.3f", p_values[i])
+    } else if (p_values[i] < 0.05) {
+      formatted[i] <- sprintf("%.3f", p_values[i])
+    } else {
+      formatted[i] <- sprintf("%.3f", p_values[i])
+    }
+  }
+  
+  return(formatted)
 }
 
 #' Print method for consensus results
@@ -321,6 +424,86 @@ print.consensus_results <- function(x, ...) {
   )
   print(weights_df)
   
+  # Add conflict analysis details if available
+  if (!is.null(x$conflict_analysis) && !is.null(x$conflict_analysis$results)) {
+    cli::cli_text("")
+    cli::cli_h2("Statistical Tests by Metric")
+    
+    results_df <- x$conflict_analysis$results
+    # Use formatted p-values if available, otherwise format them
+    if ("p_value_formatted" %in% names(results_df)) {
+      p_display <- results_df$p_value_formatted
+    } else {
+      p_display <- format_p_values(results_df$p_value)
+    }
+    
+    display_df <- data.frame(
+      Metric = results_df$metric,
+      `P-value` = p_display,
+      Significant = ifelse(results_df$significant, "Yes", "No"),
+      `Effect Size` = round(results_df$effect_size, 3)
+    )
+    print(display_df, row.names = FALSE)
+  }
+  
   cli::cli_text("")
-  cli::cli_text("Note: {x$interpretation$method_note}")
+  if (!is.null(x$interpretation$method_note)) {
+    cli::cli_text("Note: {x$interpretation$method_note}")
+  }
+}
+
+#' Summary method for consensus results
+#'
+#' @param object A consensus_results object
+#' @param ... Additional arguments (unused)
+#' @export
+summary.consensus_results <- function(object, ...) {
+  cat("\n=== Diversity Consensus Summary ===\n\n")
+  
+  # Basic info
+  cat("Method:", object$method, "\n")
+  cat("Number of samples:", object$n_samples, "\n")
+  cat("Metrics analyzed:", paste(object$metrics_used, collapse = ", "), "\n\n")
+  
+  # Consensus value if available
+  if (!is.null(object$consensus_value)) {
+    cat("Overall consensus value:", round(object$consensus_value, 3), "\n\n")
+  }
+  
+  # Weights summary
+  cat("Metric weights:\n")
+  for (i in seq_along(object$method_weights)) {
+    cat(sprintf("  %s: %.1f%%\n", 
+                names(object$method_weights)[i], 
+                object$method_weights[i] * 100))
+  }
+  
+  # Statistical results if groups were provided
+  if (!is.null(object$conflict_analysis) && !is.null(object$conflict_analysis$results)) {
+    cat("\nStatistical tests:\n")
+    results <- object$conflict_analysis$results
+    
+    # Use formatted p-values
+    p_display <- if ("p_value_formatted" %in% names(results)) {
+      results$p_value_formatted
+    } else {
+      format_p_values(results$p_value)
+    }
+    
+    for (i in seq_len(nrow(results))) {
+      sig_marker <- if (results$significant[i]) "***" else "   "
+      cat(sprintf("  %s: p = %s %s (effect size = %.2f)\n",
+                  results$metric[i],
+                  p_display[i],
+                  sig_marker,
+                  results$effect_size[i]))
+    }
+    
+    cat(sprintf("\nConflict analysis: %d of %d metrics significant (%.0f%%)\n",
+                object$conflict_analysis$n_metrics_significant,
+                object$conflict_analysis$n_metrics_total,
+                object$conflict_analysis$proportion_significant * 100))
+  }
+  
+  invisible(object)
 }

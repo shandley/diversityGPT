@@ -109,7 +109,8 @@ calculate_diversity <- function(physeq,
   if (!is.null(groups)) {
     if (groups %in% phyloseq::sample_variables(physeq)) {
       sample_data <- phyloseq::sample_data(physeq)
-      results$group <- as.character(sample_data[[groups]])
+      # Use the original column name, not lowercase
+      results[[groups]] <- as.character(sample_data[[groups]])
     } else {
       cli::cli_warn("Group variable '{groups}' not found in sample data")
     }

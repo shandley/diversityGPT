@@ -7,7 +7,6 @@
 #'
 #' @note This is experimental code for research purposes
 #' @author diversityGPT Development Team
-#' @date 2024
 
 #' Decompose Beta Diversity Between Two Samples
 #'

@@ -242,7 +242,8 @@ cached_diversity_suite <- function(physeq,
       }
       results$consensus <- consensus_diversity(
         results$diversity_metrics,
-        method = "information_theoretic"
+        method = "adaptive",
+        groups = groups
       )
     }
     
