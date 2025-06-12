@@ -51,7 +51,8 @@ detect_assembly_mechanisms <- function(universal_info,
                                      phyloseq_obj = NULL,
                                      method = "comprehensive",
                                      significance_threshold = 0.05,
-                                     bootstrap_n = 1000) {
+                                     bootstrap_n = 1000,
+                                     thresholds = NULL) {
   
   # Validate inputs
   if (!inherits(universal_info, "universal_information")) {
@@ -71,34 +72,54 @@ detect_assembly_mechanisms <- function(universal_info,
     if ("S_component" %in% names(components)) components$S <- components$S_component
   }
   
+  # Get ecological thresholds (use defaults if not provided)
+  if (is.null(thresholds)) {
+    # Load default thresholds from config
+    if (exists("get_config_parameters")) {
+      thresholds <- get_config_parameters("ecological")
+    } else {
+      # Fallback to hardcoded defaults with warning
+      cli::cli_warn("Using default ecological thresholds. Consider providing custom thresholds based on your system.")
+      thresholds <- list(
+        env_correlation_threshold = 0.5,
+        high_richness_threshold = 0.7,
+        low_evenness_threshold = 0.4,
+        variance_threshold = 0.5,
+        predictability_threshold = 0.6,
+        spatial_signal_threshold = 0.3
+      )
+    }
+  }
+  
   # Initialize results list
   results <- list(
     mechanisms = data.frame(),
     evidence = list(),
     patterns = list(),
-    interpretation = list()
+    interpretation = list(),
+    thresholds_used = thresholds
   )
   
   cat("Detecting community assembly mechanisms...\n")
   
   # 1. Environmental Filtering Detection
   env_filtering <- .detect_environmental_filtering(
-    components, environmental_data, significance_threshold
+    components, environmental_data, significance_threshold, thresholds
   )
   
   # 2. Competitive Exclusion Analysis
   competition <- .detect_competitive_exclusion(
-    components, quality_metrics, significance_threshold
+    components, quality_metrics, significance_threshold, thresholds
   )
   
   # 3. Neutral Process Assessment
   neutral <- .detect_neutral_processes(
-    components, transformation_matrix, bootstrap_n
+    components, transformation_matrix, bootstrap_n, thresholds
   )
   
   # 4. Dispersal Limitation Analysis
   dispersal <- .detect_dispersal_limitation(
-    components, phyloseq_obj, significance_threshold
+    components, phyloseq_obj, significance_threshold, thresholds
   )
   
   # 5. Phylogenetic Signal Analysis
@@ -151,7 +172,7 @@ detect_assembly_mechanisms <- function(universal_info,
 }
 
 # Internal function: Environmental Filtering Detection
-.detect_environmental_filtering <- function(components, env_data, threshold) {
+.detect_environmental_filtering <- function(components, env_data, threshold, eco_thresholds = NULL) {
   
   mechanism_data <- data.frame(
     mechanism = "Environmental Filtering",
@@ -193,7 +214,14 @@ detect_assembly_mechanisms <- function(universal_info,
       # Find strongest correlations
       max_corr <- max(sapply(correlations, function(x) x$max_correlation), na.rm = TRUE)
       
-      if (!is.na(max_corr) && max_corr > 0.5) {
+      # Use provided threshold or default
+      env_threshold <- if (!is.null(eco_thresholds$env_correlation_threshold)) {
+        eco_thresholds$env_correlation_threshold
+      } else {
+        0.5  # Default threshold
+      }
+      
+      if (!is.na(max_corr) && max_corr > env_threshold) {
         # Strong environmental correlation suggests filtering
         mechanism_data$confidence <- max_corr
         # Calculate actual p-value from correlation test
@@ -219,7 +247,7 @@ detect_assembly_mechanisms <- function(universal_info,
 }
 
 # Internal function: Competitive Exclusion Detection
-.detect_competitive_exclusion <- function(components, quality_metrics, threshold) {
+.detect_competitive_exclusion <- function(components, quality_metrics, threshold, eco_thresholds = NULL) {
   
   mechanism_data <- data.frame(
     mechanism = "Competitive Exclusion",
@@ -245,12 +273,25 @@ detect_assembly_mechanisms <- function(universal_info,
     R_scaled <- mean_R / max(components$R, na.rm = TRUE)
     E_scaled <- mean_E / max(components$E, na.rm = TRUE)
     
+    # Get thresholds
+    high_R_threshold <- if (!is.null(eco_thresholds$high_richness_threshold)) {
+      eco_thresholds$high_richness_threshold
+    } else {
+      0.7  # Default
+    }
+    
+    low_E_threshold <- if (!is.null(eco_thresholds$low_evenness_threshold)) {
+      eco_thresholds$low_evenness_threshold
+    } else {
+      0.4  # Default
+    }
+    
     # Strong competition: high richness, low evenness
-    if (R_scaled > 0.7 && E_scaled < 0.4) {
+    if (R_scaled > high_R_threshold && E_scaled < low_E_threshold) {
       competition_strength <- R_scaled - E_scaled
       
       mechanism_data$confidence <- competition_strength
-      mechanism_data$p_value <- 0.05  # Simplified
+      mechanism_data$p_value <- NA_real_  # P-value calculation not yet implemented
       mechanism_data$effect_size <- competition_strength
       
       evidence$evenness_reduction <- 1 - E_scaled
@@ -262,7 +303,7 @@ detect_assembly_mechanisms <- function(universal_info,
 }
 
 # Internal function: Neutral Process Detection
-.detect_neutral_processes <- function(components, transformation_matrix, bootstrap_n) {
+.detect_neutral_processes <- function(components, transformation_matrix, bootstrap_n, eco_thresholds = NULL) {
   
   mechanism_data <- data.frame(
     mechanism = "Neutral Drift",
@@ -292,12 +333,25 @@ detect_assembly_mechanisms <- function(universal_info,
                             mean(transformation_matrix$r_squared, na.rm = TRUE),
                             mean(diag(transformation_matrix), na.rm = TRUE))
       
+      # Get thresholds
+      var_threshold <- if (!is.null(eco_thresholds$variance_threshold)) {
+        eco_thresholds$variance_threshold
+      } else {
+        0.5  # Default
+      }
+      
+      pred_threshold <- if (!is.null(eco_thresholds$predictability_threshold)) {
+        eco_thresholds$predictability_threshold
+      } else {
+        0.6  # Default
+      }
+      
       # High variance + low predictability = neutral processes
-      if (total_var > 0.5 && mean_quality < 0.6) {
+      if (total_var > var_threshold && mean_quality < pred_threshold) {
         neutral_strength <- total_var * (1 - mean_quality)
         
         mechanism_data$confidence <- min(neutral_strength, 1.0)
-        mechanism_data$p_value <- 0.1
+        mechanism_data$p_value <- NA_real_  # Statistical test not yet implemented
         mechanism_data$effect_size <- neutral_strength
         
         evidence$variance_homogeneity <- total_var
@@ -310,7 +364,7 @@ detect_assembly_mechanisms <- function(universal_info,
 }
 
 # Internal function: Dispersal Limitation Detection
-.detect_dispersal_limitation <- function(components, phyloseq_obj, threshold) {
+.detect_dispersal_limitation <- function(components, phyloseq_obj, threshold, eco_thresholds = NULL) {
   
   mechanism_data <- data.frame(
     mechanism = "Dispersal Limitation",
@@ -340,9 +394,16 @@ detect_assembly_mechanisms <- function(universal_info,
       if ("S" %in% names(components)) {
         mean_S <- mean(components$S, na.rm = TRUE)
         
-        if (mean_S > 0.3) {  # Arbitrary threshold for spatial signal
+        # Get spatial threshold
+        spatial_threshold <- if (!is.null(eco_thresholds$spatial_signal_threshold)) {
+          eco_thresholds$spatial_signal_threshold
+        } else {
+          0.3  # Default threshold
+        }
+        
+        if (mean_S > spatial_threshold) {
           mechanism_data$confidence <- mean_S
-          mechanism_data$p_value <- 0.05
+          mechanism_data$p_value <- NA_real_  # Spatial significance test not implemented
           mechanism_data$effect_size <- mean_S
           
           evidence$spatial_clustering <- TRUE

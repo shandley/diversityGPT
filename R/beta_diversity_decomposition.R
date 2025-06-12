@@ -36,7 +36,9 @@ decompose_beta_diversity <- function(sample_i, sample_j,
                                    tree = NULL,
                                    coords_i = NULL, 
                                    coords_j = NULL,
-                                   method = "information") {
+                                   method = "information",
+                                   spatial_max_dist = NULL,
+                                   spatial_decay_rate = NULL) {
   
   # Ensure samples are same length
   if (length(sample_i) != length(sample_j)) {
@@ -62,7 +64,9 @@ decompose_beta_diversity <- function(sample_i, sample_j,
   # 4. S_beta: Spatial Turnover Component
   if (!is.null(coords_i) && !is.null(coords_j)) {
     components$S_beta <- calculate_S_beta(coords_i, coords_j, 
-                                          sample_i, sample_j, method)
+                                          sample_i, sample_j, method,
+                                          max_dist = spatial_max_dist,
+                                          decay_rate = spatial_decay_rate)
   } else {
     components$S_beta <- 0
   }
@@ -103,13 +107,17 @@ calculate_R_beta <- function(sample_i, sample_j, method = "information") {
     p_both <- n_both / length(sample_i)
     p_either <- n_either / length(sample_i)
     
-    # Shannon entropy components
-    H_i <- -p_i * log(p_i + 1e-10)
-    H_j <- -p_j * log(p_j + 1e-10)
-    H_union <- -p_either * log(p_either + 1e-10)
+    # Shannon entropy components with small pseudocount to avoid log(0)
+    # Standard practice in information theory (see Cover & Thomas 2006)
+    pseudocount <- 1e-10
+    H_i <- -p_i * log(p_i + pseudocount)
+    H_j <- -p_j * log(p_j + pseudocount)
+    H_union <- -p_either * log(p_either + pseudocount)
     
     # Richness turnover as excess joint entropy
-    R_beta <- H_union - 0.5 * (H_i + H_j)
+    # Using average entropy (0.5 weight) following Jost (2007)
+    avg_weight <- 0.5
+    R_beta <- H_union - avg_weight * (H_i + H_j)
     
   } else if (method == "variance") {
     # Variance partitioning approach
@@ -303,37 +311,66 @@ calculate_P_beta <- function(sample_i, sample_j, tree, method = "information") {
 }
 
 #' Calculate S_beta (Spatial Turnover)
+#' @param coords_i Spatial coordinates for sample i
+#' @param coords_j Spatial coordinates for sample j
+#' @param sample_i Abundance vector for sample i
+#' @param sample_j Abundance vector for sample j
+#' @param method Calculation method
+#' @param max_dist Optional maximum distance for normalization
+#' @param decay_rate Optional decay rate parameter
 #' @keywords internal
 calculate_S_beta <- function(coords_i, coords_j, sample_i, sample_j, 
-                            method = "information") {
+                            method = "information",
+                            max_dist = NULL,
+                            decay_rate = NULL) {
   
   # Calculate spatial distance
   spatial_dist <- sqrt(sum((coords_i - coords_j)^2))
   
+  # If max_dist not provided, we cannot properly normalize
+  # This should be calculated from the full spatial extent
+  if (is.null(max_dist) && method == "geometric") {
+    cli::cli_warn("Maximum spatial distance not provided. S_beta calculation may be unreliable.")
+    cli::cli_alert_info("Provide max_dist parameter or calculate from full dataset spatial extent.")
+    return(NA_real_)
+  }
+  
   if (method == "information") {
     # Information decay with distance
     
-    # Estimate spatial correlation length (simplified)
-    # In practice, this would be estimated from the full dataset
-    lambda <- 1  # Placeholder - should be estimated
+    # Use provided decay rate or default
+    # Decay rate should ideally be estimated from variogram analysis
+    if (is.null(decay_rate)) {
+      decay_rate <- 1.0  # Default unit decay rate
+      cli::cli_alert_info("Using default decay rate of 1.0. Consider estimating from variogram.")
+    }
     
     # Spatial information as distance-decay
-    S_beta <- 1 - exp(-spatial_dist / lambda)
-    
-    # Weight by dissimilarity unexplained by other components
-    # This prevents double-counting if species turnover is already spatial
+    S_beta <- 1 - exp(-spatial_dist / decay_rate)
     
   } else if (method == "variance") {
     # Variance partitioning approach
     
     # Calculate regular beta diversity (Bray-Curtis)
     all_species <- union(which(sample_i > 0), which(sample_j > 0))
+    if (length(all_species) == 0) {
+      return(NA_real_)  # No species in either sample
+    }
+    
     sum_min <- sum(pmin(sample_i[all_species], sample_j[all_species]))
     sum_total <- sum(sample_i[all_species]) + sum(sample_j[all_species])
+    
+    if (sum_total == 0) {
+      return(NA_real_)  # Empty samples
+    }
+    
     bray_curtis <- 1 - (2 * sum_min / sum_total)
     
-    # Simple distance-decay model
-    expected_beta <- 1 - exp(-spatial_dist)
+    # Distance-decay model with configurable rate
+    if (is.null(decay_rate)) {
+      decay_rate <- 1.0
+    }
+    expected_beta <- 1 - exp(-spatial_dist / decay_rate)
     
     # Spatial component is the predictable part
     S_beta <- min(bray_curtis, expected_beta)
@@ -341,8 +378,7 @@ calculate_S_beta <- function(coords_i, coords_j, sample_i, sample_j,
   } else if (method == "geometric") {
     # Geometric decay approach
     
-    # Normalize distance to [0,1] based on some maximum
-    max_dist <- 10  # Placeholder - should be based on study extent
+    # Normalize distance to [0,1] based on maximum distance
     S_beta <- min(1, spatial_dist / max_dist)
   }
   
@@ -391,9 +427,19 @@ decompose_beta_diversity_matrix <- function(community_matrix,
                                           tree = NULL,
                                           coords = NULL, 
                                           method = "information",
-                                          summary_method = "centroid") {
+                                          summary_method = "centroid",
+                                          spatial_max_dist = NULL,
+                                          spatial_decay_rate = NULL) {
   
   n_samples <- nrow(community_matrix)
+  
+  # Calculate spatial extent if coordinates provided but max_dist not specified
+  if (!is.null(coords) && is.null(spatial_max_dist)) {
+    # Calculate maximum pairwise distance
+    dist_mat <- as.matrix(dist(coords))
+    spatial_max_dist <- max(dist_mat)
+    cli::cli_alert_info("Calculated maximum spatial distance: {round(spatial_max_dist, 2)}")
+  }
   
   # Initialize storage for pairwise components
   R_beta_mat <- matrix(0, n_samples, n_samples)
@@ -420,7 +466,9 @@ decompose_beta_diversity_matrix <- function(community_matrix,
         tree = tree,
         coords_i = coords_i,
         coords_j = coords_j,
-        method = method
+        method = method,
+        spatial_max_dist = spatial_max_dist,
+        spatial_decay_rate = spatial_decay_rate
       )
       
       # Store in matrices
